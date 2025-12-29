@@ -64,7 +64,7 @@
     }
 
     .wrap{
-      width:min(780px, 100%);
+      width:min(820px, 100%);
       text-align:center;
       position:relative;
       z-index:1;
@@ -111,6 +111,7 @@
       background:var(--mint);
       box-shadow:0 0 0 6px rgba(46,230,166,.12);
       animation:pulse 1.6s ease-in-out infinite;
+      flex: 0 0 auto;
     }
 
     @keyframes pulse{
@@ -186,6 +187,31 @@
       user-select:none;
     }
 
+    .btnRow{
+      margin-top: 14px;
+      display:flex;
+      justify-content:center;
+    }
+
+    button{
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.88);
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+      letter-spacing: .2px;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+    }
+    button:hover{ background: rgba(0,0,0,.26); border-color: rgba(255,255,255,.20); }
+    button:active{ transform: translateY(1px); }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+
     .weather{
       margin-top: 18px;
       text-align:left;
@@ -251,7 +277,7 @@
 
       <div class="badge">
         <span class="dot"></span>
-        Horario
+        <span>Horario</span>
         <span class="selectWrap">
           <select id="tzSelect" aria-label="Seleccionar zona horaria"></select>
           <span class="chev">▾</span>
@@ -261,6 +287,13 @@
       <h1 id="answer">…</h1>
       <p class="sub" id="subtitle">…</p>
       <p class="big" id="countdown">…</p>
+
+      <div class="btnRow">
+        <button id="btnFire" type="button" title="Dispara una tanda de fuegos en la pantalla">
+          <span>🎆</span>
+          <span>Lanzar fuegos artificiales</span>
+        </button>
+      </div>
 
       <section class="weather">
         <div class="weatherTitle">🌤️ Clima para brindar (31/12 y 01/01)</div>
@@ -292,7 +325,7 @@
 
 <script>
   // -----------------------------
-  // TZ + contador (tu técnica)
+  // TZ + contador (técnica “nowInTZAsUTCDate”)
   // -----------------------------
   const TZ_OPTIONS = [
     { id:"America/Argentina/Buenos_Aires", label:"Argentina (Buenos Aires)" },
@@ -376,8 +409,6 @@
 
     c.textContent = `Faltan ${h}h ${pad(m)}m ${pad(s)}s para Año Nuevo.`;
 
-    // Emojis “calmos” mientras no sea momento fiesta
-    // (la fiesta en el fondo la maneja el canvas según fecha)
     leftEmoji.textContent = "✨";
     rightEmoji.textContent = "🌙";
   }
@@ -397,13 +428,13 @@
       localStorage.setItem(STORAGE_KEY,TZ);
       update();
       refreshWeather();
-      // fuerza update “modo fiesta”
       FX.setModeFromDate();
     });
   }
 
   // -----------------------------
-  // Fondo: “luces minimal” + fiesta solo 31/12 y 01/01
+  // Fondo: “luces minimal” siempre + fuegos solo 31/12 y 01/01
+  // + función para “disparar” fuegos a pedido (botón)
   // -----------------------------
   const FX = (() => {
     const canvas = document.getElementById("fx");
@@ -413,22 +444,29 @@
     let mode = "calm"; // calm | party
     const rockets = [];
     const parts = [];
-    const orbs = []; // lucecitas minimal
+    const orbs = [];
 
     const isMobile = () => Math.min(window.innerWidth, window.innerHeight) < 520;
 
     function cfg(){
       const party = (mode === "party");
       return {
-        fadeAlpha: party ? (isMobile()? 0.14 : 0.12) : 0.08,   // trails más suaves en calm
+        fadeAlpha: party ? (isMobile()? 0.14 : 0.12) : 0.08,
         gravity: party ? 0.055 : 0.03,
-        maxRockets: party ? (isMobile()? 10 : 16) : 0,       // 0 cohetes fuera de fecha
+
+        // fiesta automática:
+        maxRockets: party ? (isMobile()? 10 : 16) : 0,
         launchChance: party ? (isMobile()? 0.22 : 0.30) : 0,
         burstMin: party ? (isMobile()? 48 : 70) : 0,
         burstMax: party ? (isMobile()? 88 : 120) : 0,
+
+        // para el botón (manual burst) usamos otros límites:
+        manualBurstMin: isMobile()? 55 : 85,
+        manualBurstMax: isMobile()? 105 : 150,
+
         pMin: 1.0,
         pMax: isMobile()? 2.1 : 2.4,
-        orbCount: isMobile()? 18 : 28,                       // lucecitas minimal siempre
+        orbCount: isMobile()? 18 : 28,
       };
     }
     let CFG = cfg();
@@ -467,16 +505,15 @@
       const nowTZ = nowInTZAsUTCDate(TZ);
       const mm = nowTZ.getUTCMonth()+1;
       const dd = nowTZ.getUTCDate();
-
-      // Fiesta SOLO: 31/12 y 01/01 (en la TZ seleccionada)
-      // (si querés: también podemos activarlo desde el 30/12 18:00, etc.)
       const shouldParty = (mm === 12 && dd === 31) || (mm === 1 && dd === 1);
       mode = shouldParty ? "party" : "calm";
       CFG = cfg();
 
       // Limpieza suave al cambiar de modo
       rockets.length = 0;
-      parts.length = 0;
+      // parts no las vaciamos siempre para que el fade sea natural,
+      // pero si querés más “corte” descomentá:
+      // parts.length = 0;
     }
 
     function launch(){
@@ -492,15 +529,15 @@
       });
     }
 
-    function burst(x,y,hueBase){
-      const count = Math.floor(rand(CFG.burstMin, CFG.burstMax));
+    function burstAt(x,y,hueBase, minCount, maxCount){
+      const count = Math.floor(rand(minCount, maxCount));
       for(let i=0;i<count;i++){
         const a = rand(0, Math.PI*2);
-        const sp = rand(1.6, 5.4);
+        const sp = rand(1.6, 5.6);
         const hue = hueBase + rand(-28, 28);
         const alpha = rand(0.55, 0.95);
         const r = rand(CFG.pMin, CFG.pMax);
-        const ttl = rand(55, 120);
+        const ttl = rand(55, 125);
 
         parts.push({
           x, y,
@@ -530,11 +567,10 @@
     }
 
     function step(){
-      // trail
       ctx.fillStyle = `rgba(0,0,0,${CFG.fadeAlpha})`;
       ctx.fillRect(0,0,w,h);
 
-      // orbs (luces minimal)
+      // lucecitas minimal
       for(const o of orbs){
         o.x += o.vx; o.y += o.vy;
         if(o.x < -80) o.x = w+80;
@@ -550,7 +586,7 @@
       }
       ctx.globalAlpha = 1;
 
-      // party fireworks
+      // fiesta automática
       if(mode === "party"){
         // rockets
         for(let i=rockets.length-1;i>=0;i--){
@@ -567,7 +603,7 @@
           ctx.fill();
 
           if(r.y <= r.targetY || r.life <= 0){
-            burst(r.x, r.y, r.hue);
+            burstAt(r.x, r.y, r.hue, CFG.burstMin, CFG.burstMax);
             rockets.splice(i,1);
           }
         }
@@ -591,15 +627,31 @@
           if(p.age >= p.ttl) parts.splice(i,1);
         }
 
-        // launch
         if(rockets.length < CFG.maxRockets && Math.random() < CFG.launchChance){
           launch();
           if(!isMobile() && Math.random() < 0.35) launch();
         }
 
-        // micro bursts “lejanos”
         if(parts.length < (isMobile()? 950 : 1900) && Math.random() < 0.02){
-          burst(rand(w*0.15,w*0.85), rand(h*0.18,h*0.50), rand(190,340));
+          burstAt(rand(w*0.15,w*0.85), rand(h*0.18,h*0.50), rand(190,340), CFG.burstMin, CFG.burstMax);
+        }
+      } else {
+        // aún en calm, seguimos animando partículas si quedaron de un "click"
+        for(let i=parts.length-1;i>=0;i--){
+          const p = parts[i];
+          p.age++;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.04;      // gravedad suave
+          p.vx *= 0.985;
+          p.vy *= 0.985;
+
+          const t = p.age / p.ttl;
+          const fade = (1 - t);
+          const a = p.alpha * fade;
+
+          drawGlowCircle(p.x, p.y, p.r, p.hue, a);
+          if(p.age >= p.ttl) parts.splice(i,1);
         }
       }
 
@@ -607,15 +659,30 @@
       requestAnimationFrame(step);
     }
 
+    // Disparos manuales (botón)
+    function manualShow(){
+      // 3 a 6 explosiones centradas en zona superior/media
+      const bursts = isMobile() ? 3 : 5;
+      for(let i=0;i<bursts;i++){
+        setTimeout(() => {
+          burstAt(
+            rand(w*0.18, w*0.82),
+            rand(h*0.18, h*0.52),
+            rand(190, 340),
+            CFG.manualBurstMin,
+            CFG.manualBurstMax
+          );
+        }, i * (isMobile() ? 180 : 140));
+      }
+    }
+
     resize();
     setModeFromDate();
     window.addEventListener("resize", resize);
     requestAnimationFrame(step);
-
-    // cada minuto recalcula el modo por si cambia el día
     setInterval(setModeFromDate, 60_000);
 
-    return { setModeFromDate };
+    return { setModeFromDate, manualShow };
   })();
 
   // -----------------------------
@@ -626,11 +693,8 @@
   }
 
   function getDec31AndJan1Dates(nowTZ){
-    // Target = próximo 1 de enero 00:00 (en la “línea de tiempo TZ” codificada)
     const ny = nextNewYear(nowTZ);
     const targetYear = ny.getUTCFullYear();
-
-    // 31/12 del año anterior al targetYear
     const dec31 = { y: targetYear-1, m: 12, d: 31 };
     const jan01 = { y: targetYear,   m: 1,  d: 1  };
 
@@ -644,7 +708,6 @@
   }
 
   function wxLabelFromCode(code){
-    // WMO-ish mapping (simple y divertido)
     const c = Number(code);
     if([0].includes(c)) return { emoji:"☀️", txt:"Despejado" };
     if([1,2].includes(c)) return { emoji:"🌤️", txt:"Parcialmente nublado" };
@@ -661,7 +724,6 @@
   }
 
   function partyAdvice(wx){
-    // mini “chiste útil”
     const { emoji, txt } = wx;
     if(emoji === "⛈️") return "Pro tip: brindis bajo techo y playlist a todo volumen.";
     if(emoji === "🌧️" || emoji === "🌦️") return "Paraguas + zapatillas sacrificables. Brindar igual: sí.";
@@ -707,34 +769,42 @@
     url.searchParams.set("longitude", String(geo.lon));
     url.searchParams.set("timezone", "auto");
     url.searchParams.set("forecast_days", "16");
+
+    // ✅ IMPORTANTE: weather_code (no weathercode)
     url.searchParams.set("daily", [
-      "weathercode",
+      "weather_code",
       "temperature_2m_max",
       "temperature_2m_min",
       "precipitation_sum",
       "windspeed_10m_max"
     ].join(","));
 
+    // timeout
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+
     try{
-      const res = await fetch(url.toString(), { cache: "no-store" });
+      const res = await fetch(url.toString(), { cache: "no-store", signal: ctrl.signal });
+      clearTimeout(t);
+
       if(!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
       const daily = data?.daily;
       const times = daily?.time || [];
+
       const idx31 = times.indexOf(dec31Iso);
       const idx01 = times.indexOf(jan01Iso);
 
-      // Si no entra en el rango, lo decimos con onda
       if(idx31 === -1 || idx01 === -1){
-        setWxError("La API de pronóstico no llega tan lejos para esas fechas.");
+        setWxError("El pronóstico no llega hasta esas fechas (suele ser ~16 días).");
         document.getElementById("wxFooter").textContent =
-          `Ubicación aproximada: ${geo.name}. Ventana disponible del pronóstico: ${times[0] || "?"} → ${times[times.length-1] || "?"}.`;
+          `Ubicación: ${geo.name}. Ventana disponible: ${times[0] || "?"} → ${times[times.length-1] || "?"}.`;
         return;
       }
 
       function paint(dayKey, idx, label){
-        const code = daily.weathercode[idx];
+        const code = daily.weather_code[idx];
         const tmax = daily.temperature_2m_max[idx];
         const tmin = daily.temperature_2m_min[idx];
         const pr = daily.precipitation_sum[idx];
@@ -743,14 +813,10 @@
         const wx = wxLabelFromCode(code);
 
         document.getElementById(`wxEmoji${dayKey}`).textContent = wx.emoji;
-        document.getElementById(`wxMeta${dayKey}`).textContent =
-          `${label} · ${wx.txt}`;
-
+        document.getElementById(`wxMeta${dayKey}`).textContent = `${label} · ${wx.txt}`;
         document.getElementById(`wxBig${dayKey}`).textContent =
           `🌡️ ${Math.round(tmin)}° / ${Math.round(tmax)}° · 💨 ${Math.round(wind)} km/h · 💧 ${Math.round(pr)} mm`;
-
-        document.getElementById(`wxNote${dayKey}`).textContent =
-          partyAdvice(wx);
+        document.getElementById(`wxNote${dayKey}`).textContent = partyAdvice(wx);
       }
 
       paint("31", idx31, dec31Iso);
@@ -760,7 +826,10 @@
         `Ubicación aproximada para la TZ: ${geo.name}. Fechas: ${yearHint}.`;
 
     }catch(e){
-      setWxError("Puede ser un bloqueo de red o rate limit momentáneo.");
+      clearTimeout(t);
+      setWxError(e?.name === "AbortError"
+        ? "La API tardó demasiado (timeout). Probá recargar."
+        : "No pude traer el clima (red/CORS/limit momentáneo).");
     }
   }
 
@@ -771,6 +840,15 @@
   update();
   setInterval(update, 250);
   refreshWeather();
+
+  // Botón: dispara fuegos a pedido (sin cambiar el modo automático)
+  const btn = document.getElementById("btnFire");
+  btn.addEventListener("click", () => {
+    btn.disabled = true;
+    FX.manualShow();
+    // cooldown cortito para evitar spam (y que no se “prenda fuego” la CPU)
+    setTimeout(() => { btn.disabled = false; }, 1200);
+  });
 </script>
 </body>
 </html>
