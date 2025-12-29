@@ -18,6 +18,7 @@
       --pink:#ff4d8d;
       --cyan:#37d6ff;
       --neon:#7c5cff;
+      --mint:#2ee6a6;
     }
 
     *{ box-sizing:border-box; }
@@ -40,15 +41,13 @@
       overflow:hidden;
     }
 
-    /* Fireworks canvas */
-    canvas#fireworks{
+    canvas#fx{
       position:fixed;
       inset:0;
       pointer-events:none;
       z-index:0;
     }
 
-    /* Minimal stars */
     .stars{
       position:fixed;
       inset:0;
@@ -65,7 +64,7 @@
     }
 
     .wrap{
-      width:min(760px, 100%);
+      width:min(780px, 100%);
       text-align:center;
       position:relative;
       z-index:1;
@@ -73,7 +72,7 @@
 
     .card{
       position:relative;
-      padding:28px 22px 24px;
+      padding:28px 22px 22px;
       border-radius:22px;
       background:var(--card);
       border:1px solid var(--stroke);
@@ -85,8 +84,8 @@
     .glowTop{
       position:absolute;
       inset:-90px -110px auto -110px;
-      height:200px;
-      background: radial-gradient(closest-side, rgba(124,92,255,.20), transparent 70%);
+      height:210px;
+      background: radial-gradient(closest-side, rgba(124,92,255,.18), transparent 70%);
       filter: blur(10px);
       pointer-events:none;
     }
@@ -109,8 +108,8 @@
       width:9px;
       height:9px;
       border-radius:50%;
-      background:var(--gold);
-      box-shadow:0 0 0 6px rgba(255,209,102,.15);
+      background:var(--mint);
+      box-shadow:0 0 0 6px rgba(46,230,166,.12);
       animation:pulse 1.6s ease-in-out infinite;
     }
 
@@ -186,18 +185,69 @@
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
       user-select:none;
     }
+
+    .weather{
+      margin-top: 18px;
+      text-align:left;
+      border-top: 1px solid rgba(255,255,255,.12);
+      padding-top: 14px;
+    }
+    .weatherTitle{
+      display:flex; align-items:center; gap:10px;
+      color: rgba(255,255,255,.86);
+      font-size: 13px;
+      letter-spacing: .2px;
+      margin-bottom: 10px;
+      user-select:none;
+    }
+    .weatherGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .wxCard{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.14);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .wxTop{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom: 6px;
+      color: rgba(255,255,255,.86);
+      font-size: 13px;
+    }
+    .wxMeta{
+      color: rgba(255,255,255,.64);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .wxBig{
+      margin-top: 8px;
+      color: rgba(255,255,255,.86);
+      font-size: 14px;
+    }
+    .wxNote{
+      margin-top: 8px;
+      color: rgba(255,255,255,.55);
+      font-size: 12px;
+    }
+
+    @media (max-width:520px){
+      .weatherGrid{ grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 
 <body>
   <div class="stars"></div>
-  <canvas id="fireworks"></canvas>
+  <canvas id="fx"></canvas>
 
   <div class="wrap">
     <div class="card">
       <div class="glowTop"></div>
-      <div class="emojiLeft">🎆</div>
-      <div class="emojiRight">🥂</div>
+      <div class="emojiLeft" id="leftEmoji">✨</div>
+      <div class="emojiRight" id="rightEmoji">🌙</div>
 
       <div class="badge">
         <span class="dot"></span>
@@ -211,11 +261,39 @@
       <h1 id="answer">…</h1>
       <p class="sub" id="subtitle">…</p>
       <p class="big" id="countdown">…</p>
+
+      <section class="weather">
+        <div class="weatherTitle">🌤️ Clima para brindar (31/12 y 01/01)</div>
+        <div class="weatherGrid">
+          <div class="wxCard">
+            <div class="wxTop">
+              <div id="wxDate31">31/12</div>
+              <div id="wxEmoji31">…</div>
+            </div>
+            <div class="wxMeta" id="wxMeta31">Cargando…</div>
+            <div class="wxBig" id="wxBig31"></div>
+            <div class="wxNote" id="wxNote31"></div>
+          </div>
+
+          <div class="wxCard">
+            <div class="wxTop">
+              <div id="wxDate01">01/01</div>
+              <div id="wxEmoji01">…</div>
+            </div>
+            <div class="wxMeta" id="wxMeta01">Cargando…</div>
+            <div class="wxBig" id="wxBig01"></div>
+            <div class="wxNote" id="wxNote01"></div>
+          </div>
+        </div>
+        <div class="wxNote" style="margin-top:10px" id="wxFooter"></div>
+      </section>
     </div>
   </div>
 
 <script>
-  // --- Timezones / Logic ---
+  // -----------------------------
+  // TZ + contador (tu técnica)
+  // -----------------------------
   const TZ_OPTIONS = [
     { id:"America/Argentina/Buenos_Aires", label:"Argentina (Buenos Aires)" },
     { id:"America/Mexico_City", label:"México (CDMX)" },
@@ -226,6 +304,18 @@
     { id:"America/Los_Angeles", label:"USA (Los Ángeles)" },
     { id:"Europe/Madrid", label:"España (Madrid)" }
   ];
+
+  // Coordenadas representativas por TZ (para el clima)
+  const TZ_GEO = {
+    "America/Argentina/Buenos_Aires": { name:"Buenos Aires", lat:-34.6037, lon:-58.3816 },
+    "America/Mexico_City": { name:"CDMX", lat:19.4326, lon:-99.1332 },
+    "America/Santiago": { name:"Santiago", lat:-33.4489, lon:-70.6693 },
+    "America/Lima": { name:"Lima", lat:-12.0464, lon:-77.0428 },
+    "America/Bogota": { name:"Bogotá", lat:4.7110, lon:-74.0721 },
+    "America/New_York": { name:"New York", lat:40.7128, lon:-74.0060 },
+    "America/Los_Angeles": { name:"Los Ángeles", lat:34.0522, lon:-118.2437 },
+    "Europe/Madrid": { name:"Madrid", lat:40.4168, lon:-3.7038 }
+  };
 
   const STORAGE_KEY = "esanionuevo_tz";
   let TZ = localStorage.getItem(STORAGE_KEY) || "America/Argentina/Buenos_Aires";
@@ -261,11 +351,16 @@
     const st = document.getElementById("subtitle");
     const c = document.getElementById("countdown");
 
+    const leftEmoji = document.getElementById("leftEmoji");
+    const rightEmoji = document.getElementById("rightEmoji");
+
     if(isNewYear(now)){
       a.textContent="Sí.";
       a.className="yes";
       st.textContent="¡Hoy es Año Nuevo! 🎉";
       c.textContent="Salud, abrazos y nuevos comienzos 🥂✨";
+      leftEmoji.textContent = "🎆";
+      rightEmoji.textContent = "🥂";
       return;
     }
 
@@ -280,6 +375,11 @@
     const s = sec%60;
 
     c.textContent = `Faltan ${h}h ${pad(m)}m ${pad(s)}s para Año Nuevo.`;
+
+    // Emojis “calmos” mientras no sea momento fiesta
+    // (la fiesta en el fondo la maneja el canvas según fecha)
+    leftEmoji.textContent = "✨";
+    rightEmoji.textContent = "🌙";
   }
 
   function setupTZ(){
@@ -296,39 +396,42 @@
       TZ=sel.value;
       localStorage.setItem(STORAGE_KEY,TZ);
       update();
+      refreshWeather();
+      // fuerza update “modo fiesta”
+      FX.setModeFromDate();
     });
   }
 
-  // --- Fireworks (más felices, pero minimalistas) ---
-  function setupFireworks(){
-    const canvas = document.getElementById("fireworks");
+  // -----------------------------
+  // Fondo: “luces minimal” + fiesta solo 31/12 y 01/01
+  // -----------------------------
+  const FX = (() => {
+    const canvas = document.getElementById("fx");
     const ctx = canvas.getContext("2d", { alpha: true });
 
     let w=0, h=0, dpr=1;
-
-    // Ajustes (subí/bajá esto si querés)
-    const isMobile = () => Math.min(window.innerWidth, window.innerHeight) < 520;
-    const config = () => ({
-      // cuántos cohetes simultáneos como máximo
-      maxRockets: isMobile() ? 8 : 14,
-      // chance de disparo por frame (más alto => más fuego)
-      launchChance: isMobile() ? 0.18 : 0.26,
-      // partículas por explosión
-      burstMin: isMobile() ? 42 : 60,
-      burstMax: isMobile() ? 78 : 110,
-      // “trail” de fondo: menor alfa => trails más largos
-      fadeAlpha: isMobile() ? 0.14 : 0.12,
-      // gravedad
-      gravity: 0.055,
-      // tamaño de partícula
-      pMin: 1.0,
-      pMax: isMobile() ? 2.0 : 2.3
-    });
-
-    let CFG = config();
-
+    let mode = "calm"; // calm | party
     const rockets = [];
     const parts = [];
+    const orbs = []; // lucecitas minimal
+
+    const isMobile = () => Math.min(window.innerWidth, window.innerHeight) < 520;
+
+    function cfg(){
+      const party = (mode === "party");
+      return {
+        fadeAlpha: party ? (isMobile()? 0.14 : 0.12) : 0.08,   // trails más suaves en calm
+        gravity: party ? 0.055 : 0.03,
+        maxRockets: party ? (isMobile()? 10 : 16) : 0,       // 0 cohetes fuera de fecha
+        launchChance: party ? (isMobile()? 0.22 : 0.30) : 0,
+        burstMin: party ? (isMobile()? 48 : 70) : 0,
+        burstMax: party ? (isMobile()? 88 : 120) : 0,
+        pMin: 1.0,
+        pMax: isMobile()? 2.1 : 2.4,
+        orbCount: isMobile()? 18 : 28,                       // lucecitas minimal siempre
+      };
+    }
+    let CFG = cfg();
 
     function resize(){
       dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -339,10 +442,42 @@
       canvas.style.width = w + "px";
       canvas.style.height = h + "px";
       ctx.setTransform(dpr,0,0,dpr,0,0);
-      CFG = config();
+      CFG = cfg();
+      initOrbs();
     }
 
     function rand(min,max){ return Math.random()*(max-min)+min; }
+
+    function initOrbs(){
+      orbs.length = 0;
+      for(let i=0;i<CFG.orbCount;i++){
+        orbs.push({
+          x: rand(0,w),
+          y: rand(0,h),
+          r: rand(18, 52),
+          vx: rand(-0.12, 0.12),
+          vy: rand(-0.08, 0.08),
+          hue: rand(185, 335),
+          a: rand(0.06, 0.14)
+        });
+      }
+    }
+
+    function setModeFromDate(){
+      const nowTZ = nowInTZAsUTCDate(TZ);
+      const mm = nowTZ.getUTCMonth()+1;
+      const dd = nowTZ.getUTCDate();
+
+      // Fiesta SOLO: 31/12 y 01/01 (en la TZ seleccionada)
+      // (si querés: también podemos activarlo desde el 30/12 18:00, etc.)
+      const shouldParty = (mm === 12 && dd === 31) || (mm === 1 && dd === 1);
+      mode = shouldParty ? "party" : "calm";
+      CFG = cfg();
+
+      // Limpieza suave al cambiar de modo
+      rockets.length = 0;
+      parts.length = 0;
+    }
 
     function launch(){
       const x = rand(w*0.10, w*0.90);
@@ -351,7 +486,6 @@
         y: h + rand(10, 80),
         vx: rand(-0.9, 0.9),
         vy: rand(-13.6, -10.8),
-        // explode target height
         targetY: rand(h*0.14, h*0.55),
         life: rand(30, 70),
         hue: rand(190, 340),
@@ -366,9 +500,8 @@
         const hue = hueBase + rand(-28, 28);
         const alpha = rand(0.55, 0.95);
         const r = rand(CFG.pMin, CFG.pMax);
-        const ttl = rand(55, 115);
+        const ttl = rand(55, 120);
 
-        // “sparkles” con 2 capas: una normal + una glow (misma partícula con doble draw)
         parts.push({
           x, y,
           vx: Math.cos(a)*sp,
@@ -383,14 +516,12 @@
     }
 
     function drawGlowCircle(x,y,r, hue, alpha){
-      // capa glow (muy sutil)
       ctx.globalAlpha = alpha * 0.22;
       ctx.fillStyle = `hsla(${hue} 100% 75% / 1)`;
       ctx.beginPath();
       ctx.arc(x,y,r*3.2,0,Math.PI*2);
       ctx.fill();
 
-      // capa núcleo
       ctx.globalAlpha = alpha;
       ctx.fillStyle = `hsla(${hue} 100% 70% / 1)`;
       ctx.beginPath();
@@ -399,82 +530,247 @@
     }
 
     function step(){
-      // Fondo con “trail” para que parezca feliz/luces
+      // trail
       ctx.fillStyle = `rgba(0,0,0,${CFG.fadeAlpha})`;
       ctx.fillRect(0,0,w,h);
 
-      // rockets
-      for(let i=rockets.length-1;i>=0;i--){
-        const r = rockets[i];
-        r.x += r.vx;
-        r.y += r.vy;
-        r.vy += CFG.gravity*0.22;
-        r.life--;
+      // orbs (luces minimal)
+      for(const o of orbs){
+        o.x += o.vx; o.y += o.vy;
+        if(o.x < -80) o.x = w+80;
+        if(o.x > w+80) o.x = -80;
+        if(o.y < -80) o.y = h+80;
+        if(o.y > h+80) o.y = -80;
 
-        // draw rocket spark (blanco con halo leve)
-        ctx.globalAlpha = 0.85;
-        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.globalAlpha = o.a;
+        ctx.fillStyle = `hsla(${o.hue} 100% 70% / 1)`;
         ctx.beginPath();
-        ctx.arc(r.x, r.y, 1.3, 0, Math.PI*2);
+        ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
         ctx.fill();
+      }
+      ctx.globalAlpha = 1;
 
-        if(r.y <= r.targetY || r.life <= 0){
-          burst(r.x, r.y, r.hue);
-          rockets.splice(i,1);
+      // party fireworks
+      if(mode === "party"){
+        // rockets
+        for(let i=rockets.length-1;i>=0;i--){
+          const r = rockets[i];
+          r.x += r.vx;
+          r.y += r.vy;
+          r.vy += CFG.gravity*0.22;
+          r.life--;
+
+          ctx.globalAlpha = 0.85;
+          ctx.fillStyle = "rgba(255,255,255,0.9)";
+          ctx.beginPath();
+          ctx.arc(r.x, r.y, 1.35, 0, Math.PI*2);
+          ctx.fill();
+
+          if(r.y <= r.targetY || r.life <= 0){
+            burst(r.x, r.y, r.hue);
+            rockets.splice(i,1);
+          }
+        }
+
+        // particles
+        for(let i=parts.length-1;i>=0;i--){
+          const p = parts[i];
+          p.age++;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += CFG.gravity;
+          p.vx *= 0.985;
+          p.vy *= 0.985;
+
+          const t = p.age / p.ttl;
+          const fade = (1 - t);
+          const a = p.alpha * fade;
+
+          drawGlowCircle(p.x, p.y, p.r, p.hue, a);
+
+          if(p.age >= p.ttl) parts.splice(i,1);
+        }
+
+        // launch
+        if(rockets.length < CFG.maxRockets && Math.random() < CFG.launchChance){
+          launch();
+          if(!isMobile() && Math.random() < 0.35) launch();
+        }
+
+        // micro bursts “lejanos”
+        if(parts.length < (isMobile()? 950 : 1900) && Math.random() < 0.02){
+          burst(rand(w*0.15,w*0.85), rand(h*0.18,h*0.50), rand(190,340));
         }
       }
 
-      // particles
-      for(let i=parts.length-1;i>=0;i--){
-        const p = parts[i];
-        p.age++;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += CFG.gravity;
-        p.vx *= 0.985;
-        p.vy *= 0.985;
-
-        const t = p.age / p.ttl;
-        const fade = (1 - t);
-        const a = p.alpha * fade;
-
-        drawGlowCircle(p.x, p.y, p.r, p.hue, a);
-
-        if(p.age >= p.ttl) parts.splice(i,1);
-      }
-
       ctx.globalAlpha = 1;
-
-      // launch more often (pero cap para no explotar)
-      if(rockets.length < CFG.maxRockets && Math.random() < CFG.launchChance){
-        // a veces lanza 2 juntos para “felicidad” sin ruido visual
-        launch();
-        if(!isMobile() && Math.random() < 0.35) launch();
-      }
-
-      // “micro-bursts” ocasionales (lucecitas lejanas)
-      if(parts.length < (isMobile()? 900 : 1800) && Math.random() < 0.02){
-        burst(rand(w*0.15,w*0.85), rand(h*0.18,h*0.50), rand(190,340));
-      }
-
       requestAnimationFrame(step);
     }
 
     resize();
+    setModeFromDate();
     window.addEventListener("resize", resize);
-
-    // arranque con un mini show
-    for(let i=0;i<(isMobile()? 4 : 8); i++){
-      setTimeout(()=>{ launch(); }, i*120);
-    }
-
     requestAnimationFrame(step);
+
+    // cada minuto recalcula el modo por si cambia el día
+    setInterval(setModeFromDate, 60_000);
+
+    return { setModeFromDate };
+  })();
+
+  // -----------------------------
+  // Clima (31/12 y 01/01) - Open-Meteo
+  // -----------------------------
+  function isoDateUTC(y,m,d){
+    return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
   }
 
+  function getDec31AndJan1Dates(nowTZ){
+    // Target = próximo 1 de enero 00:00 (en la “línea de tiempo TZ” codificada)
+    const ny = nextNewYear(nowTZ);
+    const targetYear = ny.getUTCFullYear();
+
+    // 31/12 del año anterior al targetYear
+    const dec31 = { y: targetYear-1, m: 12, d: 31 };
+    const jan01 = { y: targetYear,   m: 1,  d: 1  };
+
+    return {
+      dec31Iso: isoDateUTC(dec31.y, dec31.m, dec31.d),
+      jan01Iso: isoDateUTC(jan01.y, jan01.m, jan01.d),
+      dec31Label: "31/12",
+      jan01Label: "01/01",
+      yearHint: `${dec31.y} → ${jan01.y}`
+    };
+  }
+
+  function wxLabelFromCode(code){
+    // WMO-ish mapping (simple y divertido)
+    const c = Number(code);
+    if([0].includes(c)) return { emoji:"☀️", txt:"Despejado" };
+    if([1,2].includes(c)) return { emoji:"🌤️", txt:"Parcialmente nublado" };
+    if([3].includes(c)) return { emoji:"☁️", txt:"Nublado" };
+    if([45,48].includes(c)) return { emoji:"🌫️", txt:"Niebla / bruma" };
+    if([51,53,55].includes(c)) return { emoji:"🌦️", txt:"Llovizna" };
+    if([61,63,65].includes(c)) return { emoji:"🌧️", txt:"Lluvia" };
+    if([66,67].includes(c)) return { emoji:"🌧️", txt:"Lluvia helada" };
+    if([71,73,75,77].includes(c)) return { emoji:"🌨️", txt:"Nieve" };
+    if([80,81,82].includes(c)) return { emoji:"🌧️", txt:"Chubascos" };
+    if([95].includes(c)) return { emoji:"⛈️", txt:"Tormentas" };
+    if([96,99].includes(c)) return { emoji:"⛈️", txt:"Tormentas fuertes" };
+    return { emoji:"🌙", txt:"Variable" };
+  }
+
+  function partyAdvice(wx){
+    // mini “chiste útil”
+    const { emoji, txt } = wx;
+    if(emoji === "⛈️") return "Pro tip: brindis bajo techo y playlist a todo volumen.";
+    if(emoji === "🌧️" || emoji === "🌦️") return "Paraguas + zapatillas sacrificables. Brindar igual: sí.";
+    if(emoji === "🌫️") return "Niebla mística: ideal para foto aesthetic (y abrigo).";
+    if(emoji === "🌨️") return "Modo polar activado: brindis con guantes, por favor.";
+    if(emoji === "☀️") return "Clima premium: terraza y brindis con vista.";
+    if(emoji === "🌤️") return "Bastante bien: abrigo liviano y a disfrutar.";
+    return `Clima ${txt.toLowerCase()}: improvisar con estilo.`;
+  }
+
+  function setWxLoading(){
+    ["31","01"].forEach(k=>{
+      document.getElementById(`wxEmoji${k}`).textContent = "…";
+      document.getElementById(`wxMeta${k}`).textContent = "Cargando…";
+      document.getElementById(`wxBig${k}`).textContent = "";
+      document.getElementById(`wxNote${k}`).textContent = "";
+    });
+    document.getElementById("wxFooter").textContent = "";
+  }
+
+  function setWxError(msg){
+    ["31","01"].forEach(k=>{
+      document.getElementById(`wxEmoji${k}`).textContent = "🤷";
+      document.getElementById(`wxMeta${k}`).textContent = "No pude traer el clima.";
+      document.getElementById(`wxBig${k}`).textContent = msg || "Probá recargar o cambiar la TZ.";
+      document.getElementById(`wxNote${k}`).textContent = "";
+    });
+    document.getElementById("wxFooter").textContent = "";
+  }
+
+  async function refreshWeather(){
+    setWxLoading();
+
+    const geo = TZ_GEO[TZ] || TZ_GEO["America/Argentina/Buenos_Aires"];
+    const nowTZ = nowInTZAsUTCDate(TZ);
+    const { dec31Iso, jan01Iso, dec31Label, jan01Label, yearHint } = getDec31AndJan1Dates(nowTZ);
+
+    document.getElementById("wxDate31").textContent = `${dec31Label}`;
+    document.getElementById("wxDate01").textContent = `${jan01Label}`;
+
+    const url = new URL("https://api.open-meteo.com/v1/forecast");
+    url.searchParams.set("latitude", String(geo.lat));
+    url.searchParams.set("longitude", String(geo.lon));
+    url.searchParams.set("timezone", "auto");
+    url.searchParams.set("forecast_days", "16");
+    url.searchParams.set("daily", [
+      "weathercode",
+      "temperature_2m_max",
+      "temperature_2m_min",
+      "precipitation_sum",
+      "windspeed_10m_max"
+    ].join(","));
+
+    try{
+      const res = await fetch(url.toString(), { cache: "no-store" });
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      const daily = data?.daily;
+      const times = daily?.time || [];
+      const idx31 = times.indexOf(dec31Iso);
+      const idx01 = times.indexOf(jan01Iso);
+
+      // Si no entra en el rango, lo decimos con onda
+      if(idx31 === -1 || idx01 === -1){
+        setWxError("La API de pronóstico no llega tan lejos para esas fechas.");
+        document.getElementById("wxFooter").textContent =
+          `Ubicación aproximada: ${geo.name}. Ventana disponible del pronóstico: ${times[0] || "?"} → ${times[times.length-1] || "?"}.`;
+        return;
+      }
+
+      function paint(dayKey, idx, label){
+        const code = daily.weathercode[idx];
+        const tmax = daily.temperature_2m_max[idx];
+        const tmin = daily.temperature_2m_min[idx];
+        const pr = daily.precipitation_sum[idx];
+        const wind = daily.windspeed_10m_max[idx];
+
+        const wx = wxLabelFromCode(code);
+
+        document.getElementById(`wxEmoji${dayKey}`).textContent = wx.emoji;
+        document.getElementById(`wxMeta${dayKey}`).textContent =
+          `${label} · ${wx.txt}`;
+
+        document.getElementById(`wxBig${dayKey}`).textContent =
+          `🌡️ ${Math.round(tmin)}° / ${Math.round(tmax)}° · 💨 ${Math.round(wind)} km/h · 💧 ${Math.round(pr)} mm`;
+
+        document.getElementById(`wxNote${dayKey}`).textContent =
+          partyAdvice(wx);
+      }
+
+      paint("31", idx31, dec31Iso);
+      paint("01", idx01, jan01Iso);
+
+      document.getElementById("wxFooter").textContent =
+        `Ubicación aproximada para la TZ: ${geo.name}. Fechas: ${yearHint}.`;
+
+    }catch(e){
+      setWxError("Puede ser un bloqueo de red o rate limit momentáneo.");
+    }
+  }
+
+  // -----------------------------
+  // Init
+  // -----------------------------
   setupTZ();
   update();
-  setInterval(update, 250); // más fluido por los segundos
-  setupFireworks();
+  setInterval(update, 250);
+  refreshWeather();
 </script>
 </body>
 </html>
