@@ -33,18 +33,35 @@
       color:var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
       background:
-        radial-gradient(900px 500px at 15% 15%, rgba(55,214,255,.15), transparent 60%),
-        radial-gradient(900px 500px at 85% 25%, rgba(255,77,141,.15), transparent 60%),
-        radial-gradient(900px 600px at 50% 120%, rgba(124,92,255,.20), transparent 60%),
+        radial-gradient(900px 500px at 15% 15%, rgba(55,214,255,.16), transparent 60%),
+        radial-gradient(900px 500px at 85% 25%, rgba(255,77,141,.14), transparent 60%),
+        radial-gradient(900px 650px at 50% 120%, rgba(124,92,255,.20), transparent 60%),
         linear-gradient(180deg, var(--bg1), var(--bg2));
       overflow:hidden;
     }
 
-    canvas{
+    /* Fireworks canvas */
+    canvas#fireworks{
       position:fixed;
       inset:0;
       pointer-events:none;
       z-index:0;
+    }
+
+    /* Minimal stars */
+    .stars{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      opacity:.55;
+      background-image:
+        radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.55), transparent 60%),
+        radial-gradient(1px 1px at 84% 22%, rgba(255,255,255,.40), transparent 60%),
+        radial-gradient(1px 1px at 55% 62%, rgba(255,255,255,.35), transparent 60%),
+        radial-gradient(1px 1px at 32% 78%, rgba(255,255,255,.42), transparent 60%),
+        radial-gradient(1px 1px at 70% 86%, rgba(255,255,255,.28), transparent 60%);
+      filter: blur(.15px);
     }
 
     .wrap{
@@ -62,6 +79,16 @@
       border:1px solid var(--stroke);
       backdrop-filter: blur(10px);
       box-shadow: 0 30px 90px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+
+    .glowTop{
+      position:absolute;
+      inset:-90px -110px auto -110px;
+      height:200px;
+      background: radial-gradient(closest-side, rgba(124,92,255,.20), transparent 70%);
+      filter: blur(10px);
+      pointer-events:none;
     }
 
     .badge{
@@ -75,6 +102,7 @@
       color:var(--muted);
       font-size:13px;
       margin-bottom:14px;
+      user-select:none;
     }
 
     .dot{
@@ -100,17 +128,17 @@
       border-radius:999px;
       font-size:13px;
       cursor:pointer;
+      outline:none;
     }
 
-    .selectWrap{ position:relative; }
+    .selectWrap{ position:relative; display:inline-flex; align-items:center; }
     .chev{
       position:absolute;
       right:10px;
-      top:50%;
-      transform:translateY(-50%);
-      font-size:12px;
       opacity:.7;
       pointer-events:none;
+      font-size:12px;
+      transform: translateY(1px);
     }
 
     h1{
@@ -124,6 +152,7 @@
       -webkit-background-clip:text;
       background-clip:text;
       color:transparent;
+      text-shadow: 0 0 40px rgba(255,209,102,.06);
     }
 
     .no{
@@ -136,39 +165,57 @@
     .sub{
       font-size:clamp(16px,2.2vw,20px);
       color:var(--muted);
+      margin: 8px 0 0;
     }
 
     .big{
       margin-top:14px;
       font-size:clamp(18px,2.4vw,22px);
+      color: rgba(255,255,255,.86);
+    }
+
+    .emojiLeft{
+      position:absolute; left:18px; top:18px;
+      font-size:18px; opacity:.8;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+      user-select:none;
+    }
+    .emojiRight{
+      position:absolute; right:18px; top:18px;
+      font-size:18px; opacity:.8;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+      user-select:none;
     }
   </style>
 </head>
 
 <body>
+  <div class="stars"></div>
+  <canvas id="fireworks"></canvas>
 
-<canvas id="fireworks"></canvas>
+  <div class="wrap">
+    <div class="card">
+      <div class="glowTop"></div>
+      <div class="emojiLeft">🎆</div>
+      <div class="emojiRight">🥂</div>
 
-<div class="wrap">
-  <div class="card">
-    🎆 🥂
+      <div class="badge">
+        <span class="dot"></span>
+        Horario
+        <span class="selectWrap">
+          <select id="tzSelect" aria-label="Seleccionar zona horaria"></select>
+          <span class="chev">▾</span>
+        </span>
+      </div>
 
-    <div class="badge">
-      <span class="dot"></span>
-      Horario
-      <span class="selectWrap">
-        <select id="tzSelect"></select>
-        <span class="chev">▾</span>
-      </span>
+      <h1 id="answer">…</h1>
+      <p class="sub" id="subtitle">…</p>
+      <p class="big" id="countdown">…</p>
     </div>
-
-    <h1 id="answer">…</h1>
-    <p class="sub" id="subtitle">…</p>
-    <p class="big" id="countdown">…</p>
   </div>
-</div>
 
 <script>
+  // --- Timezones / Logic ---
   const TZ_OPTIONS = [
     { id:"America/Argentina/Buenos_Aires", label:"Argentina (Buenos Aires)" },
     { id:"America/Mexico_City", label:"México (CDMX)" },
@@ -176,6 +223,7 @@
     { id:"America/Lima", label:"Perú (Lima)" },
     { id:"America/Bogota", label:"Colombia (Bogotá)" },
     { id:"America/New_York", label:"USA (New York)" },
+    { id:"America/Los_Angeles", label:"USA (Los Ángeles)" },
     { id:"Europe/Madrid", label:"España (Madrid)" }
   ];
 
@@ -183,20 +231,18 @@
   let TZ = localStorage.getItem(STORAGE_KEY) || "America/Argentina/Buenos_Aires";
 
   function nowInTZAsUTCDate(tz){
-    const f = new Intl.DateTimeFormat("en-US",{
+    const parts = new Intl.DateTimeFormat("en-US",{
       timeZone:tz,
       year:"numeric",month:"2-digit",day:"2-digit",
       hour:"2-digit",minute:"2-digit",second:"2-digit",
       hour12:false
     }).formatToParts(new Date());
 
-    const g = t => Number(f.find(p=>p.type===t).value);
-    return new Date(Date.UTC(g("year"), g("month")-1, g("day"), g("hour"), g("minute"), g("second")));
+    const get = t => Number(parts.find(p=>p.type===t).value);
+    return new Date(Date.UTC(get("year"), get("month")-1, get("day"), get("hour"), get("minute"), get("second")));
   }
 
-  function isNewYear(d){
-    return d.getUTCMonth()===0 && d.getUTCDate()===1;
-  }
+  function isNewYear(d){ return d.getUTCMonth()===0 && d.getUTCDate()===1; }
 
   function nextNewYear(d){
     const y = d.getUTCFullYear();
@@ -212,32 +258,33 @@
     const now = nowInTZAsUTCDate(TZ);
 
     const a = document.getElementById("answer");
-    const s = document.getElementById("subtitle");
+    const st = document.getElementById("subtitle");
     const c = document.getElementById("countdown");
 
     if(isNewYear(now)){
       a.textContent="Sí.";
       a.className="yes";
-      s.textContent="¡Hoy es Año Nuevo! 🎉";
-      c.textContent="Salud, abrazos y nuevos comienzos 🥂";
+      st.textContent="¡Hoy es Año Nuevo! 🎉";
+      c.textContent="Salud, abrazos y nuevos comienzos 🥂✨";
       return;
     }
 
     a.textContent="No :(";
     a.className="no";
-    s.textContent="Todavía no es Año Nuevo.";
+    st.textContent="Todavía no es Año Nuevo.";
 
     const diff = nextNewYear(now) - now;
     const sec = Math.max(0, Math.ceil(diff/1000));
     const h = Math.floor(sec/3600);
     const m = Math.floor((sec%3600)/60);
-    const s2 = sec%60;
+    const s = sec%60;
 
-    c.textContent = `Faltan ${h}h ${pad(m)}m ${pad(s2)}s para Año Nuevo.`;
+    c.textContent = `Faltan ${h}h ${pad(m)}m ${pad(s)}s para Año Nuevo.`;
   }
 
   function setupTZ(){
     const sel = document.getElementById("tzSelect");
+    sel.innerHTML = "";
     TZ_OPTIONS.forEach(o=>{
       const opt=document.createElement("option");
       opt.value=o.id;
@@ -245,57 +292,189 @@
       if(o.id===TZ) opt.selected=true;
       sel.appendChild(opt);
     });
-    sel.onchange=()=>{
+    sel.addEventListener("change", ()=>{
       TZ=sel.value;
       localStorage.setItem(STORAGE_KEY,TZ);
       update();
-    };
+    });
   }
 
-  /* fireworks */
-  function fireworks(){
-    const c=document.getElementById("fireworks");
-    const x=c.getContext("2d");
-    let w,h;
+  // --- Fireworks (más felices, pero minimalistas) ---
+  function setupFireworks(){
+    const canvas = document.getElementById("fireworks");
+    const ctx = canvas.getContext("2d", { alpha: true });
+
+    let w=0, h=0, dpr=1;
+
+    // Ajustes (subí/bajá esto si querés)
+    const isMobile = () => Math.min(window.innerWidth, window.innerHeight) < 520;
+    const config = () => ({
+      // cuántos cohetes simultáneos como máximo
+      maxRockets: isMobile() ? 8 : 14,
+      // chance de disparo por frame (más alto => más fuego)
+      launchChance: isMobile() ? 0.18 : 0.26,
+      // partículas por explosión
+      burstMin: isMobile() ? 42 : 60,
+      burstMax: isMobile() ? 78 : 110,
+      // “trail” de fondo: menor alfa => trails más largos
+      fadeAlpha: isMobile() ? 0.14 : 0.12,
+      // gravedad
+      gravity: 0.055,
+      // tamaño de partícula
+      pMin: 1.0,
+      pMax: isMobile() ? 2.0 : 2.3
+    });
+
+    let CFG = config();
+
+    const rockets = [];
+    const parts = [];
 
     function resize(){
-      w=c.width=window.innerWidth;
-      h=c.height=window.innerHeight;
+      dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      CFG = config();
     }
-    window.onresize=resize; resize();
 
-    const p=[];
+    function rand(min,max){ return Math.random()*(max-min)+min; }
+
     function launch(){
-      p.push({
-        x:Math.random()*w,
-        y:h,
-        vx:(Math.random()-.5)*2,
-        vy:-8-Math.random()*4,
-        life:60
+      const x = rand(w*0.10, w*0.90);
+      rockets.push({
+        x,
+        y: h + rand(10, 80),
+        vx: rand(-0.9, 0.9),
+        vy: rand(-13.6, -10.8),
+        // explode target height
+        targetY: rand(h*0.14, h*0.55),
+        life: rand(30, 70),
+        hue: rand(190, 340),
       });
+    }
+
+    function burst(x,y,hueBase){
+      const count = Math.floor(rand(CFG.burstMin, CFG.burstMax));
+      for(let i=0;i<count;i++){
+        const a = rand(0, Math.PI*2);
+        const sp = rand(1.6, 5.4);
+        const hue = hueBase + rand(-28, 28);
+        const alpha = rand(0.55, 0.95);
+        const r = rand(CFG.pMin, CFG.pMax);
+        const ttl = rand(55, 115);
+
+        // “sparkles” con 2 capas: una normal + una glow (misma partícula con doble draw)
+        parts.push({
+          x, y,
+          vx: Math.cos(a)*sp,
+          vy: Math.sin(a)*sp,
+          hue,
+          alpha,
+          r,
+          ttl,
+          age: 0
+        });
+      }
+    }
+
+    function drawGlowCircle(x,y,r, hue, alpha){
+      // capa glow (muy sutil)
+      ctx.globalAlpha = alpha * 0.22;
+      ctx.fillStyle = `hsla(${hue} 100% 75% / 1)`;
+      ctx.beginPath();
+      ctx.arc(x,y,r*3.2,0,Math.PI*2);
+      ctx.fill();
+
+      // capa núcleo
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = `hsla(${hue} 100% 70% / 1)`;
+      ctx.beginPath();
+      ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fill();
     }
 
     function step(){
-      x.fillStyle="rgba(0,0,0,.2)";
-      x.fillRect(0,0,w,h);
+      // Fondo con “trail” para que parezca feliz/luces
+      ctx.fillStyle = `rgba(0,0,0,${CFG.fadeAlpha})`;
+      ctx.fillRect(0,0,w,h);
 
-      p.forEach((e,i)=>{
-        e.x+=e.vx; e.y+=e.vy; e.vy+=.15; e.life--;
-        x.fillStyle=`hsl(${Math.random()*360} 100% 70%)`;
-        x.fillRect(e.x,e.y,2,2);
-        if(e.life<=0) p.splice(i,1);
-      });
+      // rockets
+      for(let i=rockets.length-1;i>=0;i--){
+        const r = rockets[i];
+        r.x += r.vx;
+        r.y += r.vy;
+        r.vy += CFG.gravity*0.22;
+        r.life--;
 
-      if(Math.random()<.06) launch();
+        // draw rocket spark (blanco con halo leve)
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, 1.3, 0, Math.PI*2);
+        ctx.fill();
+
+        if(r.y <= r.targetY || r.life <= 0){
+          burst(r.x, r.y, r.hue);
+          rockets.splice(i,1);
+        }
+      }
+
+      // particles
+      for(let i=parts.length-1;i>=0;i--){
+        const p = parts[i];
+        p.age++;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += CFG.gravity;
+        p.vx *= 0.985;
+        p.vy *= 0.985;
+
+        const t = p.age / p.ttl;
+        const fade = (1 - t);
+        const a = p.alpha * fade;
+
+        drawGlowCircle(p.x, p.y, p.r, p.hue, a);
+
+        if(p.age >= p.ttl) parts.splice(i,1);
+      }
+
+      ctx.globalAlpha = 1;
+
+      // launch more often (pero cap para no explotar)
+      if(rockets.length < CFG.maxRockets && Math.random() < CFG.launchChance){
+        // a veces lanza 2 juntos para “felicidad” sin ruido visual
+        launch();
+        if(!isMobile() && Math.random() < 0.35) launch();
+      }
+
+      // “micro-bursts” ocasionales (lucecitas lejanas)
+      if(parts.length < (isMobile()? 900 : 1800) && Math.random() < 0.02){
+        burst(rand(w*0.15,w*0.85), rand(h*0.18,h*0.50), rand(190,340));
+      }
+
       requestAnimationFrame(step);
     }
-    step();
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    // arranque con un mini show
+    for(let i=0;i<(isMobile()? 4 : 8); i++){
+      setTimeout(()=>{ launch(); }, i*120);
+    }
+
+    requestAnimationFrame(step);
   }
 
   setupTZ();
   update();
-  setInterval(update,1000);
-  fireworks();
+  setInterval(update, 250); // más fluido por los segundos
+  setupFireworks();
 </script>
 </body>
 </html>
