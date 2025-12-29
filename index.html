@@ -16,6 +16,7 @@
     }
     *{ box-sizing:border-box; }
     html, body { height: 100%; }
+
     body{
       margin:0; min-height:100vh;
       display:flex; align-items:center; justify-content:center;
@@ -28,7 +29,9 @@
         linear-gradient(180deg, var(--bg1), var(--bg2));
       overflow:hidden;
     }
+
     canvas#fx{ position:fixed; inset:0; pointer-events:none; z-index:0; }
+
     .stars{
       position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.55;
       background-image:
@@ -39,20 +42,26 @@
         radial-gradient(1px 1px at 70% 86%, rgba(255,255,255,.28), transparent 60%);
       filter: blur(.15px);
     }
+
     .wrap{ width:min(900px, 100%); text-align:center; position:relative; z-index:1; }
+
     .card{
-      position:relative; padding:28px 22px 22px;
-      border-radius:22px; background:var(--card);
+      position:relative;
+      padding:28px 22px 22px;
+      border-radius:22px;
+      background:var(--card);
       border:1px solid var(--stroke);
       backdrop-filter: blur(10px);
       box-shadow: 0 30px 90px rgba(0,0,0,.45);
       overflow:hidden;
     }
+
     .glowTop{
       position:absolute; inset:-90px -110px auto -110px; height:210px;
       background: radial-gradient(closest-side, rgba(124,92,255,.18), transparent 70%);
       filter: blur(10px); pointer-events:none;
     }
+
     .badge{
       display:inline-flex; align-items:center; gap:10px;
       padding:8px 12px; border-radius:999px;
@@ -61,6 +70,7 @@
       color:var(--muted); font-size:13px;
       margin-bottom:14px; user-select:none;
     }
+
     .dot{
       width:9px; height:9px; border-radius:50%;
       background:var(--mint);
@@ -68,6 +78,7 @@
       animation:pulse 1.6s ease-in-out infinite;
       flex: 0 0 auto;
     }
+
     @keyframes pulse{ 0%,100%{ transform:scale(1); opacity:1 } 50%{ transform:scale(1.2); opacity:.8 } }
 
     select{
@@ -79,6 +90,7 @@
       border-radius:999px;
       font-size:13px; cursor:pointer; outline:none;
     }
+
     .selectWrap{ position:relative; display:inline-flex; align-items:center; }
     .chev{ position:absolute; right:10px; opacity:.7; pointer-events:none; font-size:12px; transform: translateY(1px); }
 
@@ -89,11 +101,7 @@
       line-height:1.05;
     }
 
-    /* Gradiente SOLO para el texto */
-    .ansText{
-      display:inline-block;
-      vertical-align:baseline;
-    }
+    .ansText{ display:inline-block; vertical-align:baseline; }
     .yes .ansText{
       background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
       -webkit-background-clip:text; background-clip:text;
@@ -105,11 +113,9 @@
       -webkit-background-clip:text; background-clip:text;
       color:transparent;
     }
-
-    /* Emoji separado: color normal (no clip) */
     .ansEmoji{
       display:inline-block;
-      margin-left: .28em;
+      margin-left:.28em;
       color: rgba(255,255,255,.92);
       text-shadow: 0 10px 28px rgba(0,0,0,.35);
       transform: translateY(.04em);
@@ -126,6 +132,7 @@
     .emojiLeft{ left:18px; }
     .emojiRight{ right:18px; }
 
+    /* Push button */
     .btnRow{ margin-top: 16px; display:flex; gap:10px; justify-content:center; flex-wrap: wrap; }
     .pushBtn{
       border: 1px solid rgba(255,255,255,.18);
@@ -158,24 +165,51 @@
     .pushBtn:disabled{ opacity:.60; cursor:not-allowed; transform:none; }
     .pushBtn .ico{ font-size: 18px; }
 
-    .miniBtn{
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.16);
-      color: rgba(255,255,255,.78);
-      padding: 12px 14px;
-      border-radius: 999px;
-      cursor: pointer;
+    /* Weather super simple */
+    .weather{
+      margin-top: 18px;
+      text-align:left;
+      border-top: 1px solid rgba(255,255,255,.12);
+      padding-top: 14px;
+    }
+    .weatherTitle{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      color: rgba(255,255,255,.86);
       font-size: 13px;
       letter-spacing: .2px;
+      margin-bottom: 10px;
       user-select:none;
-      transition: transform .08s ease, background .15s ease, border-color .15s ease;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
     }
-    .miniBtn:hover{ background: rgba(0,0,0,.24); border-color: rgba(255,255,255,.20); }
-    .miniBtn:active{ transform: translateY(1px); }
+    .weatherGrid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .wxCard{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.14);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .wxTop{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom: 6px;
+      color: rgba(255,255,255,.86);
+      font-size: 13px;
+    }
+    .wxLine{
+      color: rgba(255,255,255,.70);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .wxFooter{
+      margin-top: 10px;
+      color: rgba(255,255,255,.50);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    @media (max-width:520px){
+      .weatherGrid{ grid-template-columns: 1fr; }
+      .pushBtn{ min-width: 100%; }
+    }
 
+    /* Toast */
     .toast{
       position: fixed; left: 50%; top: 18px;
       transform: translateX(-50%);
@@ -195,36 +229,6 @@
       display:flex; align-items:center; gap:10px;
     }
     .toast.show{ opacity: 1; transform: translateX(-50%) translateY(4px); }
-
-    .weather{
-      margin-top: 18px; text-align:left;
-      border-top: 1px solid rgba(255,255,255,.12);
-      padding-top: 14px;
-    }
-    .weatherTitle{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px;
-      color: rgba(255,255,255,.86);
-      font-size: 13px;
-      letter-spacing: .2px;
-      margin-bottom: 10px;
-      user-select:none;
-    }
-    .weatherGrid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    .wxCard{
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.14);
-      border-radius: 16px;
-      padding: 12px;
-    }
-    .wxTop{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px; color: rgba(255,255,255,.86); font-size: 13px; }
-    .wxMeta{ color: rgba(255,255,255,.64); font-size: 12px; line-height: 1.35; }
-    .wxBig{ margin-top: 8px; color: rgba(255,255,255,.86); font-size: 14px; }
-    .wxNote{ margin-top: 8px; color: rgba(255,255,255,.55); font-size: 12px; }
-    @media (max-width:520px){
-      .weatherGrid{ grid-template-columns: 1fr; }
-      .pushBtn{ min-width: 100%; }
-    }
   </style>
 </head>
 
@@ -249,7 +253,6 @@
         </span>
       </div>
 
-      <!-- ✅ H1 con spans para que el emoji NO quede clippeado -->
       <h1 id="answer" class="no">
         <span class="ansText" id="answerText">…</span>
         <span class="ansEmoji" id="answerEmoji">…</span>
@@ -263,35 +266,28 @@
           <span class="ico">🎆</span>
           <span id="btnFireLabel">Lanzar fuegos artificiales</span>
         </button>
-
-        <button class="miniBtn" id="btnWeather" type="button">
-          <span>🌤️</span><span>Reintentar clima</span>
-        </button>
       </div>
 
+      <!-- ✅ Clima más básico: solo mín/máx -->
       <section class="weather">
         <div class="weatherTitle">
-          <span>🌤️ Clima para brindar (31/12 y 01/01)</span>
+          <span>🌤️ Clima (mín / máx)</span>
           <span style="color:rgba(255,255,255,.55); font-size:12px;" id="wxLoc"></span>
         </div>
 
         <div class="weatherGrid">
           <div class="wxCard">
             <div class="wxTop"><div>31/12</div><div id="wxEmoji31">…</div></div>
-            <div class="wxMeta" id="wxMeta31">Cargando…</div>
-            <div class="wxBig" id="wxBig31"></div>
-            <div class="wxNote" id="wxNote31"></div>
+            <div class="wxLine" id="wxLine31">Cargando…</div>
           </div>
 
           <div class="wxCard">
             <div class="wxTop"><div>01/01</div><div id="wxEmoji01">…</div></div>
-            <div class="wxMeta" id="wxMeta01">Cargando…</div>
-            <div class="wxBig" id="wxBig01"></div>
-            <div class="wxNote" id="wxNote01"></div>
+            <div class="wxLine" id="wxLine01">Cargando…</div>
           </div>
         </div>
 
-        <div class="wxNote" style="margin-top:10px" id="wxFooter"></div>
+        <div class="wxFooter" id="wxFooter"></div>
       </section>
     </div>
   </div>
@@ -361,12 +357,12 @@
     const h1 = document.getElementById("answer");
     const t = document.getElementById("answerText");
     const e = document.getElementById("answerEmoji");
-    h1.className = mode;      // "yes" o "no" para gradiente
-    t.textContent = text;     // solo texto (con gradiente)
-    e.textContent = emoji;    // emoji separado (sin clip)
+    h1.className = mode;      // "yes" o "no"
+    t.textContent = text;
+    e.textContent = emoji;
   }
 
-  // ✅ Siempre “No …” si todavía no es 1/1
+  // Siempre “No …” si todavía no es 1/1
   function update(){
     const now = nowInTZAsUTCDate(TZ);
 
@@ -395,7 +391,7 @@
 
     if(hoursLeft <= 24){
       setAnswer({ mode:"yes", text:"No", emoji:"🤩" });
-      st.textContent = "Casi… ¡estamos a nada! 🎇";
+      st.textContent = "No, pero… estamos a nada 🎇";
       leftEmoji.textContent = "✨";
       rightEmoji.textContent = "⏳";
     } else if(hoursLeft <= 24*7){
@@ -425,13 +421,13 @@
       TZ=sel.value;
       localStorage.setItem(STORAGE_KEY,TZ);
       update();
-      refreshWeather();
+      loadWeatherOnce();
       FX.setModeFromDate();
       showToast("Zona horaria actualizada", "🕒");
     });
   }
 
-  // FX (luces + fuegos)
+  // FX: luces + fuegos
   const FX = (() => {
     const canvas = document.getElementById("fx");
     const ctx = canvas.getContext("2d", { alpha: true });
@@ -610,58 +606,136 @@
     return { setModeFromDate, manualShow };
   })();
 
-  // Clima (offline con presets)
-  function setWxLoading(){
-    ["31","01"].forEach(k=>{
-      document.getElementById(`wxEmoji${k}`).textContent = "…";
-      document.getElementById(`wxMeta${k}`).textContent = "Cargando…";
-      document.getElementById(`wxBig${k}`).textContent = "";
-      document.getElementById(`wxNote${k}`).textContent = "";
-    });
-    document.getElementById("wxFooter").textContent = "";
-  }
-
-  function setWxOffline(city, hint){
+  // Weather: ultra simple (min/max) con fallback offline rápido.
+  function wxPreset(city){
     const presets = {
-      "Buenos Aires": { tmin: 20, tmax: 29, wx:"Caluroso/variable", emoji:"🌤️", wind: 18, pr: 2 },
-      "CDMX":         { tmin: 8,  tmax: 21, wx:"Fresco y seco",     emoji:"☀️", wind: 14, pr: 0 },
-      "Santiago":     { tmin: 14, tmax: 28, wx:"Seco y cálido",     emoji:"☀️", wind: 20, pr: 0 },
-      "Lima":         { tmin: 20, tmax: 27, wx:"Húmedo/templado",   emoji:"🌤️", wind: 16, pr: 0 },
-      "Bogotá":       { tmin: 9,  tmax: 19, wx:"Fresco + chances",  emoji:"🌦️", wind: 12, pr: 4 },
-      "New York":     { tmin: -2, tmax: 5,  wx:"Frío",              emoji:"🥶", wind: 24, pr: 1 },
-      "Los Ángeles":  { tmin: 8,  tmax: 19, wx:"Fresco/agradable",  emoji:"🌤️", wind: 14, pr: 0 },
-      "Madrid":       { tmin: 1,  tmax: 10, wx:"Frío",              emoji:"❄️", wind: 18, pr: 1 },
+      "Buenos Aires": { emoji:"🌤️", min:20, max:29 },
+      "CDMX":         { emoji:"☀️",  min:8,  max:21 },
+      "Santiago":     { emoji:"☀️",  min:14, max:28 },
+      "Lima":         { emoji:"🌤️", min:20, max:27 },
+      "Bogotá":       { emoji:"🌦️", min:9,  max:19 },
+      "New York":     { emoji:"🥶",  min:-2, max:5  },
+      "Los Ángeles":  { emoji:"🌤️", min:8,  max:19 },
+      "Madrid":       { emoji:"❄️",  min:1,  max:10 },
     };
-    const p = presets[city] || { tmin: 12, tmax: 24, wx:"Variable", emoji:"🌙", wind: 15, pr: 1 };
-
-    function paint(dayKey, label){
-      document.getElementById(`wxEmoji${dayKey}`).textContent = p.emoji;
-      document.getElementById(`wxMeta${dayKey}`).textContent = `${label} · Modo offline`;
-      document.getElementById(`wxBig${dayKey}`).textContent =
-        `🌡️ ~${p.tmin}° / ~${p.tmax}° · 💨 ~${p.wind} km/h · 💧 ~${p.pr} mm`;
-      document.getElementById(`wxNote${dayKey}`).textContent =
-        `Dato “típico”: ${p.wx}. ${hint}`;
-    }
-
-    paint("31", "31/12");
-    paint("01", "01/01");
-    document.getElementById("wxFooter").textContent =
-      `Modo offline: tu red bloquea el servicio de pronóstico. Esto NO es pronóstico real; son valores típicos aproximados para ${city}.`;
+    return presets[city] || { emoji:"🌙", min:12, max:24 };
   }
 
-  async function refreshWeather(){
-    setWxLoading();
+  function setWxSimple(dayKey, emoji, min, max, label){
+    document.getElementById(`wxEmoji${dayKey}`).textContent = emoji;
+    document.getElementById(`wxLine${dayKey}`).textContent = `${label}: mín ${Math.round(min)}° · máx ${Math.round(max)}°`;
+  }
+
+  async function loadWeatherOnce(){
     const geo = TZ_GEO[TZ] || TZ_GEO["America/Argentina/Buenos_Aires"];
     document.getElementById("wxLoc").textContent = `📍 ${geo.name}`;
-    // En tu caso, dejamos offline directo (porque ya te funciona “ver clima”)
-    setWxOffline(geo.name, "Tip: si llueve, brindis igual 😄");
+    document.getElementById("wxFooter").textContent = "";
+
+    // si tu red bloquea, evitamos “cargando infinito”: timeout corto y fallback
+    const url = new URL("https://api.open-meteo.com/v1/forecast");
+    url.searchParams.set("latitude", String(geo.lat));
+    url.searchParams.set("longitude", String(geo.lon));
+    url.searchParams.set("timezone", "auto");
+    url.searchParams.set("forecast_days", "16");
+    url.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,weather_code");
+
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 3500);
+
+    // placeholders
+    document.getElementById("wxEmoji31").textContent = "…";
+    document.getElementById("wxEmoji01").textContent = "…";
+    document.getElementById("wxLine31").textContent = "Cargando…";
+    document.getElementById("wxLine01").textContent = "Cargando…";
+
+    try{
+      const res = await fetch(url.toString(), { cache:"no-store", signal: ctrl.signal });
+      clearTimeout(t);
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+
+      const nowTZ = nowInTZAsUTCDate(TZ);
+      const ny = nextNewYear(nowTZ);
+      const year = ny.getUTCFullYear();
+      const dec31 = `${year-1}-12-31`;
+      const jan01 = `${year}-01-01`;
+
+      const daily = data?.daily || {};
+      const times = daily.time || [];
+      const i31 = times.indexOf(dec31);
+      const i01 = times.indexOf(jan01);
+
+      // si no está en ventana, fallback a preset
+      if(i31 === -1 || i01 === -1){
+        const p = wxPreset(geo.name);
+        setWxSimple("31", p.emoji, p.min, p.max, "31/12");
+        setWxSimple("01", p.emoji, p.min, p.max, "01/01");
+        document.getElementById("wxFooter").textContent = "Pronóstico real no disponible aún (ventana de ~16 días). Mostrando valores típicos.";
+        return;
+      }
+
+      // emoji simple por weather_code
+      const codeToEmoji = (c) => {
+        c = Number(c);
+        if(c === 0) return "☀️";
+        if(c === 1 || c === 2) return "🌤️";
+        if(c === 3) return "☁️";
+        if(c === 45 || c === 48) return "🌫️";
+        if((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return "🌧️";
+        if(c >= 71 && c <= 77) return "🌨️";
+        if(c >= 95) return "⛈️";
+        return "🌙";
+      };
+
+      setWxSimple("31",
+        codeToEmoji(daily.weather_code[i31]),
+        daily.temperature_2m_min[i31],
+        daily.temperature_2m_max[i31],
+        "31/12"
+      );
+
+      setWxSimple("01",
+        codeToEmoji(daily.weather_code[i01]),
+        daily.temperature_2m_min[i01],
+        daily.temperature_2m_max[i01],
+        "01/01"
+      );
+
+      document.getElementById("wxFooter").textContent = "Fuente: Open-Meteo (cuando tu red lo permite).";
+    }catch(e){
+      clearTimeout(t);
+      const p = wxPreset(geo.name);
+      setWxSimple("31", p.emoji, p.min, p.max, "31/12");
+      setWxSimple("01", p.emoji, p.min, p.max, "01/01");
+      document.getElementById("wxFooter").textContent = "No pude traer el pronóstico. Mostrando valores típicos (offline).";
+    }
   }
 
   // Init
-  setupTZ();
+  function setupTZSelect(){
+    const sel = document.getElementById("tzSelect");
+    sel.innerHTML = "";
+    TZ_OPTIONS.forEach(o=>{
+      const opt = document.createElement("option");
+      opt.value = o.id;
+      opt.textContent = o.label;
+      if(o.id === TZ) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", ()=>{
+      TZ = sel.value;
+      localStorage.setItem(STORAGE_KEY, TZ);
+      update();
+      loadWeatherOnce();
+      FX.setModeFromDate();
+      showToast("Zona horaria actualizada", "🕒");
+    });
+  }
+
+  setupTZSelect();
   update();
   setInterval(update, 250);
-  refreshWeather();
+  loadWeatherOnce();
 
   // Botón fuegos
   const btnFire = document.getElementById("btnFire");
@@ -675,12 +749,6 @@
       btnFire.disabled = false;
       btnFireLabel.textContent = "Lanzar fuegos artificiales";
     }, 1300);
-  });
-
-  // Botón clima
-  document.getElementById("btnWeather").addEventListener("click", () => {
-    showToast("Actualizado (offline)", "🌤️");
-    refreshWeather();
   });
 </script>
 </body>
