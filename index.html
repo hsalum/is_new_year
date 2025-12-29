@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>¿Es Año Nuevo?</title>
+  <meta name="theme-color" content="#060a1f" />
+
+  <style>
+    :root{
+      --bg1:#05061a;
+      --bg2:#0b0f2a;
+      --card: rgba(255,255,255,.06);
+      --stroke: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.68);
+      --gold:#ffd166;
+      --pink:#ff4d8d;
+      --cyan:#37d6ff;
+      --neon:#7c5cff;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body { height: 100%; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
+      background:
+        radial-gradient(900px 500px at 15% 15%, rgba(55,214,255,.15), transparent 60%),
+        radial-gradient(900px 500px at 85% 25%, rgba(255,77,141,.15), transparent 60%),
+        radial-gradient(900px 600px at 50% 120%, rgba(124,92,255,.20), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+    }
+
+    canvas{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    .wrap{
+      width:min(760px, 100%);
+      text-align:center;
+      position:relative;
+      z-index:1;
+    }
+
+    .card{
+      position:relative;
+      padding:28px 22px 24px;
+      border-radius:22px;
+      background:var(--card);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 30px 90px rgba(0,0,0,.45);
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:14px;
+    }
+
+    .dot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:var(--gold);
+      box-shadow:0 0 0 6px rgba(255,209,102,.15);
+      animation:pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse{
+      0%,100%{ transform:scale(1); opacity:1 }
+      50%{ transform:scale(1.2); opacity:.8 }
+    }
+
+    select{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.2);
+      color:var(--text);
+      padding:6px 28px 6px 10px;
+      border-radius:999px;
+      font-size:13px;
+      cursor:pointer;
+    }
+
+    .selectWrap{ position:relative; }
+    .chev{
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:12px;
+      opacity:.7;
+      pointer-events:none;
+    }
+
+    h1{
+      margin:10px 0 6px;
+      font-size:clamp(42px, 6vw, 76px);
+      letter-spacing:-0.02em;
+    }
+
+    .yes{
+      background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .no{
+      background:linear-gradient(90deg,#fff,rgba(255,255,255,.55));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .sub{
+      font-size:clamp(16px,2.2vw,20px);
+      color:var(--muted);
+    }
+
+    .big{
+      margin-top:14px;
+      font-size:clamp(18px,2.4vw,22px);
+    }
+  </style>
+</head>
+
+<body>
+
+<canvas id="fireworks"></canvas>
+
+<div class="wrap">
+  <div class="card">
+    🎆 🥂
+
+    <div class="badge">
+      <span class="dot"></span>
+      Horario
+      <span class="selectWrap">
+        <select id="tzSelect"></select>
+        <span class="chev">▾</span>
+      </span>
+    </div>
+
+    <h1 id="answer">…</h1>
+    <p class="sub" id="subtitle">…</p>
+    <p class="big" id="countdown">…</p>
+  </div>
+</div>
+
+<script>
+  const TZ_OPTIONS = [
+    { id:"America/Argentina/Buenos_Aires", label:"Argentina (Buenos Aires)" },
+    { id:"America/Mexico_City", label:"México (CDMX)" },
+    { id:"America/Santiago", label:"Chile (Santiago)" },
+    { id:"America/Lima", label:"Perú (Lima)" },
+    { id:"America/Bogota", label:"Colombia (Bogotá)" },
+    { id:"America/New_York", label:"USA (New York)" },
+    { id:"Europe/Madrid", label:"España (Madrid)" }
+  ];
+
+  const STORAGE_KEY = "esanionuevo_tz";
+  let TZ = localStorage.getItem(STORAGE_KEY) || "America/Argentina/Buenos_Aires";
+
+  function nowInTZAsUTCDate(tz){
+    const f = new Intl.DateTimeFormat("en-US",{
+      timeZone:tz,
+      year:"numeric",month:"2-digit",day:"2-digit",
+      hour:"2-digit",minute:"2-digit",second:"2-digit",
+      hour12:false
+    }).formatToParts(new Date());
+
+    const g = t => Number(f.find(p=>p.type===t).value);
+    return new Date(Date.UTC(g("year"), g("month")-1, g("day"), g("hour"), g("minute"), g("second")));
+  }
+
+  function isNewYear(d){
+    return d.getUTCMonth()===0 && d.getUTCDate()===1;
+  }
+
+  function nextNewYear(d){
+    const y = d.getUTCFullYear();
+    const m = d.getUTCMonth()+1;
+    const day = d.getUTCDate();
+    const next = (m>1 || (m===1 && day>1)) ? y+1 : y;
+    return new Date(Date.UTC(next,0,1,0,0,0));
+  }
+
+  function pad(n){ return String(n).padStart(2,"0"); }
+
+  function update(){
+    const now = nowInTZAsUTCDate(TZ);
+
+    const a = document.getElementById("answer");
+    const s = document.getElementById("subtitle");
+    const c = document.getElementById("countdown");
+
+    if(isNewYear(now)){
+      a.textContent="Sí.";
+      a.className="yes";
+      s.textContent="¡Hoy es Año Nuevo! 🎉";
+      c.textContent="Salud, abrazos y nuevos comienzos 🥂";
+      return;
+    }
+
+    a.textContent="No :(";
+    a.className="no";
+    s.textContent="Todavía no es Año Nuevo.";
+
+    const diff = nextNewYear(now) - now;
+    const sec = Math.max(0, Math.ceil(diff/1000));
+    const h = Math.floor(sec/3600);
+    const m = Math.floor((sec%3600)/60);
+    const s2 = sec%60;
+
+    c.textContent = `Faltan ${h}h ${pad(m)}m ${pad(s2)}s para Año Nuevo.`;
+  }
+
+  function setupTZ(){
+    const sel = document.getElementById("tzSelect");
+    TZ_OPTIONS.forEach(o=>{
+      const opt=document.createElement("option");
+      opt.value=o.id;
+      opt.textContent=o.label;
+      if(o.id===TZ) opt.selected=true;
+      sel.appendChild(opt);
+    });
+    sel.onchange=()=>{
+      TZ=sel.value;
+      localStorage.setItem(STORAGE_KEY,TZ);
+      update();
+    };
+  }
+
+  /* fireworks */
+  function fireworks(){
+    const c=document.getElementById("fireworks");
+    const x=c.getContext("2d");
+    let w,h;
+
+    function resize(){
+      w=c.width=window.innerWidth;
+      h=c.height=window.innerHeight;
+    }
+    window.onresize=resize; resize();
+
+    const p=[];
+    function launch(){
+      p.push({
+        x:Math.random()*w,
+        y:h,
+        vx:(Math.random()-.5)*2,
+        vy:-8-Math.random()*4,
+        life:60
+      });
+    }
+
+    function step(){
+      x.fillStyle="rgba(0,0,0,.2)";
+      x.fillRect(0,0,w,h);
+
+      p.forEach((e,i)=>{
+        e.x+=e.vx; e.y+=e.vy; e.vy+=.15; e.life--;
+        x.fillStyle=`hsl(${Math.random()*360} 100% 70%)`;
+        x.fillRect(e.x,e.y,2,2);
+        if(e.life<=0) p.splice(i,1);
+      });
+
+      if(Math.random()<.06) launch();
+      requestAnimationFrame(step);
+    }
+    step();
+  }
+
+  setupTZ();
+  update();
+  setInterval(update,1000);
+  fireworks();
+</script>
+</body>
+</html>
