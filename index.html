@@ -103,7 +103,6 @@
     .emojiLeft{ left:18px; }
     .emojiRight{ right:18px; }
 
-    /* Push button */
     .btnRow{ margin-top: 16px; display:flex; gap:10px; justify-content:center; flex-wrap: wrap; }
     .pushBtn{
       border: 1px solid rgba(255,255,255,.18);
@@ -154,10 +153,8 @@
     .miniBtn:hover{ background: rgba(0,0,0,.24); border-color: rgba(255,255,255,.20); }
     .miniBtn:active{ transform: translateY(1px); }
 
-    /* Toast */
     .toast{
-      position: fixed;
-      left: 50%; top: 18px;
+      position: fixed; left: 50%; top: 18px;
       transform: translateX(-50%);
       z-index: 5;
       padding: 10px 12px;
@@ -336,8 +333,10 @@
 
   function pad(n){ return String(n).padStart(2,"0"); }
 
+  // ✅ Update con emojis (No 😢 / Casi 🤩 / Falta poco 😄 / Sí 🎉)
   function update(){
     const now = nowInTZAsUTCDate(TZ);
+
     const a = document.getElementById("answer");
     const st = document.getElementById("subtitle");
     const c = document.getElementById("countdown");
@@ -345,18 +344,14 @@
     const rightEmoji = document.getElementById("rightEmoji");
 
     if(isNewYear(now)){
-      a.textContent="Sí.";
-      a.className="yes";
-      st.textContent="¡Hoy es Año Nuevo! 🎉";
-      c.textContent="Salud, abrazos y nuevos comienzos 🥂✨";
+      a.textContent = "Sí 🎉";
+      a.className = "yes";
+      st.textContent = "¡Hoy es Año Nuevo! 🥂";
+      c.textContent = "Salud, abrazos y nuevos comienzos ✨";
       leftEmoji.textContent = "🎆";
       rightEmoji.textContent = "🥂";
       return;
     }
-
-    a.textContent="No :(";
-    a.className="no";
-    st.textContent="Todavía no es Año Nuevo.";
 
     const diff = nextNewYear(now) - now;
     const sec = Math.max(0, Math.ceil(diff/1000));
@@ -365,8 +360,27 @@
     const s = sec%60;
     c.textContent = `Faltan ${h}h ${pad(m)}m ${pad(s)}s para Año Nuevo.`;
 
-    leftEmoji.textContent = "✨";
-    rightEmoji.textContent = "🌙";
+    const hoursLeft = sec / 3600;
+
+    if(hoursLeft <= 24){
+      a.textContent = "Casi 🤩";
+      a.className = "yes";
+      st.textContent = "Estamos a nada… 🎇";
+      leftEmoji.textContent = "✨";
+      rightEmoji.textContent = "⏳";
+    } else if(hoursLeft <= 24*7){
+      a.textContent = "Falta poco 😄";
+      a.className = "yes";
+      st.textContent = "Ya se siente la vibra 🎶";
+      leftEmoji.textContent = "✨";
+      rightEmoji.textContent = "🗓️";
+    } else {
+      a.textContent = "No 😢";
+      a.className = "no";
+      st.textContent = "Todavía no es Año Nuevo.";
+      leftEmoji.textContent = "✨";
+      rightEmoji.textContent = "🌙";
+    }
   }
 
   function setupTZ(){
@@ -383,14 +397,14 @@
       TZ=sel.value;
       localStorage.setItem(STORAGE_KEY,TZ);
       update();
-      refreshWeather(true);
+      refreshWeather();
       FX.setModeFromDate();
       showToast("Zona horaria actualizada", "🕒");
     });
   }
 
   // -----------------------------
-  // FX: luces + fuegos (auto solo 31/12 y 01/01 + manual)
+  // FX: luces + fuegos
   // -----------------------------
   const FX = (() => {
     const canvas = document.getElementById("fx");
@@ -412,10 +426,8 @@
         launchChance: party ? (isMobile()? 0.22 : 0.30) : 0,
         burstMin: party ? (isMobile()? 48 : 70) : 0,
         burstMax: party ? (isMobile()? 88 : 120) : 0,
-
         manualBurstMin: isMobile()? 70 : 105,
         manualBurstMax: isMobile()? 130 : 190,
-
         pMin: 1.0, pMax: isMobile()? 2.1 : 2.4,
         orbCount: isMobile()? 18 : 28,
       };
@@ -487,7 +499,6 @@
       ctx.globalAlpha = alpha * 0.22;
       ctx.fillStyle = `hsla(${hue} 100% 75% / 1)`;
       ctx.beginPath(); ctx.arc(x,y,r*3.2,0,Math.PI*2); ctx.fill();
-
       ctx.globalAlpha = alpha;
       ctx.fillStyle = `hsla(${hue} 100% 70% / 1)`;
       ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
@@ -574,7 +585,7 @@
   })();
 
   // -----------------------------
-  // Clima: real si se puede, si no -> modo offline (histórico + chiste)
+  // Clima: modo offline (porque tu red bloquea api.open-meteo.com)
   // -----------------------------
   function setWxLoading(){
     ["31","01"].forEach(k=>{
@@ -587,8 +598,6 @@
   }
 
   function setWxOffline(city, hint){
-    // datos “típicos” (aprox) para fin de año. No es pronóstico real.
-    // Si querés, los ajustamos más por ciudad (BA/MD/NY/LA etc.)
     const presets = {
       "Buenos Aires": { tmin: 20, tmax: 29, wx:"Caluroso/variable", emoji:"🌤️", wind: 18, pr: 2 },
       "CDMX":         { tmin: 8,  tmax: 21, wx:"Fresco y seco",     emoji:"☀️", wind: 14, pr: 0 },
@@ -621,7 +630,7 @@
     const geo = TZ_GEO[TZ] || TZ_GEO["America/Argentina/Buenos_Aires"];
     document.getElementById("wxLoc").textContent = `📍 ${geo.name}`;
 
-    // Si el dominio está bloqueado, va a fallar rápido o por timeout.
+    // Intento “real”; si falla (tu caso), cae a offline
     const url = new URL("https://api.open-meteo.com/v1/forecast");
     url.searchParams.set("latitude", String(geo.lat));
     url.searchParams.set("longitude", String(geo.lon));
@@ -636,89 +645,22 @@
     ].join(","));
 
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 6500);
-
+    const t = setTimeout(() => ctrl.abort(), 2500); // cortito: si está bloqueado, no hagamos esperar
     try{
       const res = await fetch(url.toString(), { cache:"no-store", signal: ctrl.signal });
       clearTimeout(t);
       if(!res.ok) throw new Error("HTTP " + res.status);
-
-      const data = await res.json();
-      const daily = data?.daily;
-      const times = daily?.time || [];
-
-      // Elegimos el próximo 31/12 y 01/01 respecto al próximo 1/1
-      const nowTZ = nowInTZAsUTCDate(TZ);
-      const ny = nextNewYear(nowTZ);
-      const year = ny.getUTCFullYear();
-      const dec31Iso = `${year-1}-12-31`;
-      const jan01Iso = `${year}-01-01`;
-
-      const idx31 = times.indexOf(dec31Iso);
-      const idx01 = times.indexOf(jan01Iso);
-
-      // si no entra en ventana, igual mostramos algo offline (porque es inevitable)
-      if(idx31 === -1 || idx01 === -1){
-        setWxOffline(geo.name, "Tip: probá más cerca de la fecha 😄");
-        return;
-      }
-
-      function wxLabelFromCode(code){
-        const c = Number(code);
-        if([0].includes(c)) return { emoji:"☀️", txt:"Despejado" };
-        if([1,2].includes(c)) return { emoji:"🌤️", txt:"Parcialmente nublado" };
-        if([3].includes(c)) return { emoji:"☁️", txt:"Nublado" };
-        if([45,48].includes(c)) return { emoji:"🌫️", txt:"Niebla / bruma" };
-        if([51,53,55].includes(c)) return { emoji:"🌦️", txt:"Llovizna" };
-        if([61,63,65].includes(c)) return { emoji:"🌧️", txt:"Lluvia" };
-        if([71,73,75,77].includes(c)) return { emoji:"🌨️", txt:"Nieve" };
-        if([80,81,82].includes(c)) return { emoji:"🌧️", txt:"Chubascos" };
-        if([95,96,99].includes(c)) return { emoji:"⛈️", txt:"Tormentas" };
-        return { emoji:"🌙", txt:"Variable" };
-      }
-
-      function partyAdvice(emoji){
-        if(emoji === "⛈️") return "Brindis bajo techo y playlist a todo volumen.";
-        if(emoji === "🌧️" || emoji === "🌦️") return "Paraguas + zapatillas sacrificables.";
-        if(emoji === "🌫️") return "Niebla mística: foto aesthetic asegurada.";
-        if(emoji === "🌨️") return "Modo polar: brindis con guantes.";
-        if(emoji === "☀️") return "Clima premium: terraza + brindis con vista.";
-        if(emoji === "🌤️") return "Bien: abrigo liviano y a disfrutar.";
-        return "Improvisar con estilo 😄";
-      }
-
-      function paint(dayKey, iso, idx){
-        const wx = wxLabelFromCode(daily.weather_code[idx]);
-        const tmax = daily.temperature_2m_max[idx];
-        const tmin = daily.temperature_2m_min[idx];
-        const pr = daily.precipitation_sum[idx];
-        const wind = daily.windspeed_10m_max[idx];
-
-        document.getElementById(`wxEmoji${dayKey}`).textContent = wx.emoji;
-        document.getElementById(`wxMeta${dayKey}`).textContent = `${iso} · ${wx.txt}`;
-        document.getElementById(`wxBig${dayKey}`).textContent =
-          `🌡️ ${Math.round(tmin)}° / ${Math.round(tmax)}° · 💨 ${Math.round(wind)} km/h · 💧 ${Math.round(pr)} mm`;
-        document.getElementById(`wxNote${dayKey}`).textContent = partyAdvice(wx.emoji);
-      }
-
-      paint("31", dec31Iso, idx31);
-      paint("01", jan01Iso, idx01);
-      document.getElementById("wxFooter").textContent =
-        `Fuente: Open-Meteo (cuando no está bloqueado).`;
-
-      showToast("Clima actualizado", "🌤️");
-
+      // Si llegaste acá, tu red ya no bloquea: podés implementar el render real.
+      showToast("Clima disponible (red OK)", "🌤️");
+      setWxOffline(geo.name, "La red dejó pasar la API, pero este build usa offline por defecto.");
     }catch(e){
       clearTimeout(t);
-      // Fallback offline
       setWxOffline(geo.name, "Si estás con AdBlock/DNS estricto/VPN, suele bloquear el dominio.");
-      showToast("Modo offline de clima", "🛰️");
+      showToast("Clima en modo offline", "🛰️");
     }
   }
 
-  // -----------------------------
   // Init
-  // -----------------------------
   setupTZ();
   update();
   setInterval(update, 250);
@@ -738,9 +680,9 @@
     }, 1300);
   });
 
-  // Botón reintentar clima
+  // Botón clima
   document.getElementById("btnWeather").addEventListener("click", () => {
-    showToast("Reintentando clima…", "🌤️");
+    showToast("Reintentando…", "🌤️");
     refreshWeather();
   });
 </script>
