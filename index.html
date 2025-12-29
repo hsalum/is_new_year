@@ -82,16 +82,39 @@
     .selectWrap{ position:relative; display:inline-flex; align-items:center; }
     .chev{ position:absolute; right:10px; opacity:.7; pointer-events:none; font-size:12px; transform: translateY(1px); }
 
-    h1{ margin:10px 0 6px; font-size:clamp(42px, 6vw, 76px); letter-spacing:-0.02em; }
-    .yes{
+    h1{
+      margin:10px 0 6px;
+      font-size:clamp(42px, 6vw, 76px);
+      letter-spacing:-0.02em;
+      line-height:1.05;
+    }
+
+    /* Gradiente SOLO para el texto */
+    .ansText{
+      display:inline-block;
+      vertical-align:baseline;
+    }
+    .yes .ansText{
       background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
-      -webkit-background-clip:text; background-clip:text; color:transparent;
+      -webkit-background-clip:text; background-clip:text;
+      color:transparent;
       text-shadow: 0 0 40px rgba(255,209,102,.06);
     }
-    .no{
+    .no .ansText{
       background:linear-gradient(90deg,#fff,rgba(255,255,255,.55));
-      -webkit-background-clip:text; background-clip:text; color:transparent;
+      -webkit-background-clip:text; background-clip:text;
+      color:transparent;
     }
+
+    /* Emoji separado: color normal (no clip) */
+    .ansEmoji{
+      display:inline-block;
+      margin-left: .28em;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 10px 28px rgba(0,0,0,.35);
+      transform: translateY(.04em);
+    }
+
     .sub{ font-size:clamp(16px,2.2vw,20px); color:var(--muted); margin: 8px 0 0; }
     .big{ margin-top:14px; font-size:clamp(18px,2.4vw,22px); color: rgba(255,255,255,.86); }
 
@@ -226,7 +249,12 @@
         </span>
       </div>
 
-      <h1 id="answer">…</h1>
+      <!-- ✅ H1 con spans para que el emoji NO quede clippeado -->
+      <h1 id="answer" class="no">
+        <span class="ansText" id="answerText">…</span>
+        <span class="ansEmoji" id="answerEmoji">…</span>
+      </h1>
+
       <p class="sub" id="subtitle">…</p>
       <p class="big" id="countdown">…</p>
 
@@ -269,9 +297,7 @@
   </div>
 
 <script>
-  // -----------------------------
   // Toast
-  // -----------------------------
   let toastTimer = null;
   function showToast(text, icon="✨"){
     const t = document.getElementById("toast");
@@ -282,9 +308,7 @@
     toastTimer = setTimeout(()=> t.classList.remove("show"), 1600);
   }
 
-  // -----------------------------
   // TZ
-  // -----------------------------
   const TZ_OPTIONS = [
     { id:"America/Argentina/Buenos_Aires", label:"Argentina (Buenos Aires)" },
     { id:"America/Mexico_City", label:"México (CDMX)" },
@@ -333,19 +357,26 @@
 
   function pad(n){ return String(n).padStart(2,"0"); }
 
-  // ✅ Update con emojis (No 😢 / Casi 🤩 / Falta poco 😄 / Sí 🎉)
+  function setAnswer({ mode, text, emoji }){
+    const h1 = document.getElementById("answer");
+    const t = document.getElementById("answerText");
+    const e = document.getElementById("answerEmoji");
+    h1.className = mode;      // "yes" o "no" para gradiente
+    t.textContent = text;     // solo texto (con gradiente)
+    e.textContent = emoji;    // emoji separado (sin clip)
+  }
+
+  // ✅ Siempre “No …” si todavía no es 1/1
   function update(){
     const now = nowInTZAsUTCDate(TZ);
 
-    const a = document.getElementById("answer");
     const st = document.getElementById("subtitle");
     const c = document.getElementById("countdown");
     const leftEmoji = document.getElementById("leftEmoji");
     const rightEmoji = document.getElementById("rightEmoji");
 
     if(isNewYear(now)){
-      a.textContent = "Sí 🎉";
-      a.className = "yes";
+      setAnswer({ mode:"yes", text:"Sí", emoji:"🎉" });
       st.textContent = "¡Hoy es Año Nuevo! 🥂";
       c.textContent = "Salud, abrazos y nuevos comienzos ✨";
       leftEmoji.textContent = "🎆";
@@ -363,20 +394,17 @@
     const hoursLeft = sec / 3600;
 
     if(hoursLeft <= 24){
-      a.textContent = "Casi 🤩";
-      a.className = "yes";
-      st.textContent = "Estamos a nada… 🎇";
+      setAnswer({ mode:"yes", text:"No", emoji:"🤩" });
+      st.textContent = "Casi… ¡estamos a nada! 🎇";
       leftEmoji.textContent = "✨";
       rightEmoji.textContent = "⏳";
     } else if(hoursLeft <= 24*7){
-      a.textContent = "Falta poco 😄";
-      a.className = "yes";
-      st.textContent = "Ya se siente la vibra 🎶";
+      setAnswer({ mode:"yes", text:"No", emoji:"😄" });
+      st.textContent = "No, pero… falta poco 🎶";
       leftEmoji.textContent = "✨";
       rightEmoji.textContent = "🗓️";
     } else {
-      a.textContent = "No 😢";
-      a.className = "no";
+      setAnswer({ mode:"no", text:"No", emoji:"😢" });
       st.textContent = "Todavía no es Año Nuevo.";
       leftEmoji.textContent = "✨";
       rightEmoji.textContent = "🌙";
@@ -403,9 +431,7 @@
     });
   }
 
-  // -----------------------------
-  // FX: luces + fuegos
-  // -----------------------------
+  // FX (luces + fuegos)
   const FX = (() => {
     const canvas = document.getElementById("fx");
     const ctx = canvas.getContext("2d", { alpha: true });
@@ -584,9 +610,7 @@
     return { setModeFromDate, manualShow };
   })();
 
-  // -----------------------------
-  // Clima: modo offline (porque tu red bloquea api.open-meteo.com)
-  // -----------------------------
+  // Clima (offline con presets)
   function setWxLoading(){
     ["31","01"].forEach(k=>{
       document.getElementById(`wxEmoji${k}`).textContent = "…";
@@ -629,35 +653,8 @@
     setWxLoading();
     const geo = TZ_GEO[TZ] || TZ_GEO["America/Argentina/Buenos_Aires"];
     document.getElementById("wxLoc").textContent = `📍 ${geo.name}`;
-
-    // Intento “real”; si falla (tu caso), cae a offline
-    const url = new URL("https://api.open-meteo.com/v1/forecast");
-    url.searchParams.set("latitude", String(geo.lat));
-    url.searchParams.set("longitude", String(geo.lon));
-    url.searchParams.set("timezone", "auto");
-    url.searchParams.set("forecast_days", "16");
-    url.searchParams.set("daily", [
-      "weather_code",
-      "temperature_2m_max",
-      "temperature_2m_min",
-      "precipitation_sum",
-      "windspeed_10m_max"
-    ].join(","));
-
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 2500); // cortito: si está bloqueado, no hagamos esperar
-    try{
-      const res = await fetch(url.toString(), { cache:"no-store", signal: ctrl.signal });
-      clearTimeout(t);
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      // Si llegaste acá, tu red ya no bloquea: podés implementar el render real.
-      showToast("Clima disponible (red OK)", "🌤️");
-      setWxOffline(geo.name, "La red dejó pasar la API, pero este build usa offline por defecto.");
-    }catch(e){
-      clearTimeout(t);
-      setWxOffline(geo.name, "Si estás con AdBlock/DNS estricto/VPN, suele bloquear el dominio.");
-      showToast("Clima en modo offline", "🛰️");
-    }
+    // En tu caso, dejamos offline directo (porque ya te funciona “ver clima”)
+    setWxOffline(geo.name, "Tip: si llueve, brindis igual 😄");
   }
 
   // Init
@@ -682,7 +679,7 @@
 
   // Botón clima
   document.getElementById("btnWeather").addEventListener("click", () => {
-    showToast("Reintentando…", "🌤️");
+    showToast("Actualizado (offline)", "🌤️");
     refreshWeather();
   });
 </script>
