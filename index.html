@@ -13,21 +13,16 @@
       --stroke: rgba(255,255,255,.12);
       --text: rgba(255,255,255,.92);
       --muted: rgba(255,255,255,.68);
-      --gold:#ffd166; --pink:#ff4d8d; --cyan:#37d6ff; --mint:#2ee6a6;
+      --gold:#ffd166; --pink:#ff4d8d; --cyan:#37d6ff; --neon:#7c5cff; --mint:#2ee6a6;
     }
-
     *{ box-sizing:border-box; }
     html, body { height: 100%; }
 
     body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:28px;
-      color:var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial;
+      margin:0; min-height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      padding:28px; color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
       background:
         radial-gradient(900px 500px at 15% 15%, rgba(55,214,255,.16), transparent 60%),
         radial-gradient(900px 500px at 85% 25%, rgba(255,77,141,.14), transparent 60%),
@@ -36,290 +31,672 @@
       overflow:hidden;
     }
 
-    canvas#fx{
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      z-index:0;
+    canvas#fx{ position:fixed; inset:0; pointer-events:none; z-index:0; }
+
+    .stars{
+      position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.55;
+      background-image:
+        radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.55), transparent 60%),
+        radial-gradient(1px 1px at 84% 22%, rgba(255,255,255,.40), transparent 60%),
+        radial-gradient(1px 1px at 55% 62%, rgba(255,255,255,.35), transparent 60%),
+        radial-gradient(1px 1px at 32% 78%, rgba(255,255,255,.42), transparent 60%),
+        radial-gradient(1px 1px at 70% 86%, rgba(255,255,255,.28), transparent 60%);
+      filter: blur(.15px);
     }
 
-    .wrap{
-      width:min(900px,100%);
-      position:relative;
-      z-index:1;
-      text-align:center;
-    }
+    .wrap{ width:min(900px,100%); text-align:center; position:relative; z-index:1; }
 
     .card{
       position:relative;
-      padding:28px 22px 24px;
+      padding:28px 22px 22px;
       border-radius:22px;
       background:var(--card);
       border:1px solid var(--stroke);
       backdrop-filter: blur(10px);
       box-shadow:0 30px 90px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+
+    .glowTop{
+      position:absolute; inset:-90px -110px auto -110px; height:210px;
+      background: radial-gradient(closest-side, rgba(124,92,255,.18), transparent 70%);
+      filter: blur(10px); pointer-events:none;
     }
 
     .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 12px;
-      border-radius:999px;
+      display:inline-flex; align-items:center; gap:10px;
+      padding:8px 12px; border-radius:999px;
       border:1px solid var(--stroke);
       background:rgba(0,0,0,.18);
       color:var(--muted);
       font-size:13px;
       margin-bottom:14px;
+      user-select:none;
     }
 
     .dot{
-      width:9px; height:9px;
-      border-radius:50%;
+      width:9px; height:9px; border-radius:50%;
       background:var(--mint);
       box-shadow:0 0 0 6px rgba(46,230,166,.12);
-      animation:pulse 1.6s infinite;
+      animation:pulse 1.6s ease-in-out infinite;
+      flex:0 0 auto;
     }
+    @keyframes pulse{ 0%,100%{ transform:scale(1); opacity:1 } 50%{ transform:scale(1.2); opacity:.8 } }
 
-    @keyframes pulse{
-      0%,100%{ transform:scale(1); opacity:1 }
-      50%{ transform:scale(1.2); opacity:.8 }
+    .tzLabel{ color: rgba(255,255,255,.62); margin-right:4px; }
+
+    select{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.20);
+      color:rgba(255,255,255,.90);
+      padding:6px 28px 6px 10px;
+      border-radius:999px;
+      font-size:13px;
+      cursor:pointer;
+      outline:none;
     }
+    .selectWrap{ position:relative; display:inline-flex; align-items:center; }
+    .chev{ position:absolute; right:10px; opacity:.7; pointer-events:none; font-size:12px; transform: translateY(1px); }
 
     h1{
       margin:10px 0 6px;
       font-size:clamp(42px,6vw,76px);
       letter-spacing:-.02em;
+      line-height:1.05;
     }
 
-    .ansText{
-      background:linear-gradient(90deg,#fff,rgba(255,255,255,.55));
-      -webkit-background-clip:text;
-      background-clip:text;
-      color:transparent;
-    }
-
+    .ansText{ display:inline-block; vertical-align:baseline; }
     .yes .ansText{
       background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
-      -webkit-background-clip:text;
-      background-clip:text;
+      -webkit-background-clip:text; background-clip:text;
+      color:transparent;
+      text-shadow: 0 0 40px rgba(255,209,102,.06);
+    }
+    .no .ansText{
+      background:linear-gradient(90deg,#fff,rgba(255,255,255,.55));
+      -webkit-background-clip:text; background-clip:text;
       color:transparent;
     }
 
+    /* Emoji separado (sin background-clip) para que SIEMPRE se vea */
     .ansEmoji{
-      margin-left:.25em;
-      color:#fff;
+      display:inline-block;
+      margin-left:.28em;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 10px 28px rgba(0,0,0,.35);
+      transform: translateY(.04em);
     }
 
-    .sub{
-      margin-top:8px;
-      font-size:18px;
-      color:var(--muted);
-    }
+    .sub{ margin:8px 0 0; font-size:clamp(16px,2.2vw,20px); color:var(--muted); }
+    .big{ margin-top:14px; font-size:clamp(18px,2.4vw,22px); color: rgba(255,255,255,.86); }
 
-    .big{
-      margin-top:14px;
-      font-size:20px;
-    }
-
+    .btnRow{ margin-top: 16px; display:flex; justify-content:center; }
     .pushBtn{
-      margin-top:18px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.22);
+      color:rgba(255,255,255,.92);
       padding:16px 22px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.2);
-      background:rgba(0,0,0,.25);
-      color:#fff;
-      font-size:16px;
       cursor:pointer;
+      font-size:15px;
+      letter-spacing:.2px;
+      user-select:none;
       display:inline-flex;
-      gap:12px;
       align-items:center;
-      box-shadow:0 20px 60px rgba(0,0,0,.45);
-      transition:.15s;
+      gap:12px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.42), 0 0 0 1px rgba(255,255,255,.05) inset;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+      min-width: 340px;
+      justify-content:center;
     }
-
-    .pushBtn:hover{ background:rgba(0,0,0,.35); }
-    .pushBtn:active{ transform:translateY(2px); }
+    .pushBtn:hover{
+      background:rgba(0,0,0,.30);
+      border-color: rgba(255,255,255,.28);
+      box-shadow: 0 28px 70px rgba(0,0,0,.52), 0 0 0 1px rgba(255,255,255,.06) inset;
+    }
+    .pushBtn:active{ transform: translateY(2px); }
+    .pushBtn:disabled{ opacity:.60; cursor:not-allowed; transform:none; }
 
     .weather{
-      margin-top:22px;
-      padding-top:14px;
-      border-top:1px solid rgba(255,255,255,.12);
+      margin-top:18px;
       text-align:left;
+      border-top:1px solid rgba(255,255,255,.12);
+      padding-top:14px;
     }
-
     .weatherTitle{
-      display:flex;
-      justify-content:space-between;
-      font-size:13px;
-      color:rgba(255,255,255,.85);
-      margin-bottom:10px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      color: rgba(255,255,255,.86);
+      font-size: 13px;
+      letter-spacing: .2px;
+      margin-bottom: 10px;
+      user-select:none;
     }
-
-    .weatherGrid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
-
+    .weatherGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .wxCard{
-      padding:12px;
-      border-radius:14px;
-      background:rgba(0,0,0,.18);
       border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.14);
+      border-radius:16px;
+      padding:12px;
     }
-
-    .wxTop{
-      display:flex;
-      justify-content:space-between;
-      margin-bottom:6px;
-    }
-
-    .wxLine{
-      color:rgba(255,255,255,.75);
-      font-size:14px;
-    }
-
-    .wxFooter{
-      margin-top:10px;
-      font-size:12px;
-      color:rgba(255,255,255,.5);
-    }
+    .wxTop{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; color:rgba(255,255,255,.86); font-size:13px; }
+    .wxLine{ color:rgba(255,255,255,.72); font-size:13px; line-height:1.35; }
+    .wxFooter{ margin-top:10px; color:rgba(255,255,255,.50); font-size:12px; line-height:1.35; }
 
     @media(max-width:520px){
       .weatherGrid{ grid-template-columns:1fr; }
+      .pushBtn{ min-width: 100%; }
     }
   </style>
 </head>
 
 <body>
+  <div class="stars"></div>
+  <canvas id="fx"></canvas>
 
-<canvas id="fx"></canvas>
+  <div class="wrap">
+    <div class="card">
+      <div class="glowTop"></div>
 
-<div class="wrap">
-  <div class="card">
+      <div class="badge">
+        <span class="dot"></span>
+        <span class="tzLabel">Horario:</span>
+        <span class="selectWrap">
+          <select id="tzSelect" aria-label="Seleccionar zona horaria"></select>
+          <span class="chev">▾</span>
+        </span>
+      </div>
 
-    <div class="badge">
-      <span class="dot"></span>
-      Horario: Argentina (Buenos Aires)
+      <h1 id="answer" class="no">
+        <span class="ansText" id="answerText">…</span>
+        <span class="ansEmoji" id="answerEmoji">…</span>
+      </h1>
+
+      <p class="sub" id="subtitle">…</p>
+      <p class="big" id="countdown">…</p>
+
+      <div class="btnRow">
+        <button class="pushBtn" id="btnFire" type="button">
+          <span style="font-size:18px">🎆</span>
+          <span id="btnFireLabel">Lanzar fuegos artificiales</span>
+        </button>
+      </div>
+
+      <section class="weather">
+        <div class="weatherTitle">
+          <span>🌤️ Clima (mín / máx)</span>
+          <span style="color:rgba(255,255,255,.55); font-size:12px;" id="wxLoc"></span>
+        </div>
+
+        <div class="weatherGrid">
+          <div class="wxCard">
+            <div class="wxTop"><div>31/12/2025</div><div id="wxEmoji31">…</div></div>
+            <div class="wxLine" id="wxLine31">Cargando…</div>
+          </div>
+
+          <div class="wxCard">
+            <div class="wxTop"><div>01/01/2026</div><div id="wxEmoji01">…</div></div>
+            <div class="wxLine" id="wxLine01">Cargando…</div>
+          </div>
+        </div>
+
+        <div class="wxFooter" id="wxFooter"></div>
+      </section>
     </div>
-
-    <h1 id="answer" class="no">
-      <span class="ansText" id="answerText">No</span>
-      <span class="ansEmoji" id="answerEmoji">😢</span>
-    </h1>
-
-    <div class="sub" id="subtitle">Todavía no es Año Nuevo.</div>
-    <div class="big" id="countdown">…</div>
-
-    <button class="pushBtn" id="btnFire">
-      🎆 Lanzar fuegos artificiales
-    </button>
-
-    <section class="weather">
-      <div class="weatherTitle">
-        <span>🌤️ Clima (mín / máx)</span>
-        <span>📍 Buenos Aires (CABA)</span>
-      </div>
-
-      <div class="weatherGrid">
-        <div class="wxCard">
-          <div class="wxTop"><span>31/12/2025</span><span>🔥</span></div>
-          <div class="wxLine">mín 20° · máx 39°</div>
-        </div>
-
-        <div class="wxCard">
-          <div class="wxTop"><span>01/01/2026</span><span>🌤️</span></div>
-          <div class="wxLine">mín 17° · máx 28°</div>
-        </div>
-      </div>
-
-      <div class="wxFooter">
-        Pronóstico estimado para CABA · Fin de diciembre históricamente muy caluroso.
-      </div>
-    </section>
-
   </div>
-</div>
 
 <script>
-  function isNewYear(){
-    const d = new Date();
-    return d.getMonth() === 0 && d.getDate() === 1;
+  // =========================
+  // Config
+  // =========================
+  const TARGET_31 = "2025-12-31";
+  const TARGET_01 = "2026-01-01";
+
+  const TZ_OPTIONS = [
+    { id:"America/Argentina/Buenos_Aires", label:"Argentina (Buenos Aires)" },
+    { id:"America/Mexico_City", label:"México (CDMX)" },
+    { id:"America/Santiago", label:"Chile (Santiago)" },
+    { id:"America/Lima", label:"Perú (Lima)" },
+    { id:"America/Bogota", label:"Colombia (Bogotá)" },
+    { id:"America/New_York", label:"USA (New York)" },
+    { id:"America/Los_Angeles", label:"USA (Los Ángeles)" },
+    { id:"Europe/Madrid", label:"España (Madrid)" }
+  ];
+
+  // Coordenadas base por TZ (aprox ciudad principal)
+  const TZ_GEO = {
+    "America/Argentina/Buenos_Aires": { name:"Buenos Aires (CABA)", lat:-34.6037, lon:-58.3816 },
+    "America/Mexico_City":           { name:"Ciudad de México",     lat: 19.4326, lon:-99.1332 },
+    "America/Santiago":              { name:"Santiago",            lat:-33.4489, lon:-70.6693 },
+    "America/Lima":                  { name:"Lima",                lat:-12.0464, lon:-77.0428 },
+    "America/Bogota":                { name:"Bogotá",              lat:  4.7110, lon:-74.0721 },
+    "America/New_York":              { name:"New York",            lat: 40.7128, lon:-74.0060 },
+    "America/Los_Angeles":           { name:"Los Ángeles",          lat: 34.0522, lon:-118.2437 },
+    "Europe/Madrid":                 { name:"Madrid",              lat: 40.4168, lon: -3.7038 }
+  };
+
+  // Fallback prolijo si falla la API (solo como “plan B”)
+  const FALLBACK = {
+    "America/Argentina/Buenos_Aires": { min31:20, max31:39, e31:"🔥", min01:17, max01:28, e01:"🌤️" },
+    "America/Mexico_City":           { min31: 8, max31:21, e31:"☀️", min01: 8, max01:21, e01:"☀️" },
+    "America/Santiago":              { min31:14, max31:28, e31:"☀️", min01:14, max01:28, e01:"☀️" },
+    "America/Lima":                  { min31:20, max31:27, e31:"🌤️", min01:20, max01:27, e01:"🌤️" },
+    "America/Bogota":                { min31: 9, max31:19, e31:"🌦️", min01: 9, max01:19, e01:"🌦️" },
+    "America/New_York":              { min31:-2, max31: 5, e31:"🥶", min01:-2, max01: 5, e01:"🥶" },
+    "America/Los_Angeles":           { min31: 8, max31:19, e31:"🌤️", min01: 8, max01:19, e01:"🌤️" },
+    "Europe/Madrid":                 { min31: 1, max31:10, e31:"❄️", min01: 1, max01:10, e01:"❄️" },
+  };
+
+  const STORAGE_KEY = "esanionuevo_tz";
+  let TZ = localStorage.getItem(STORAGE_KEY) || "America/Argentina/Buenos_Aires";
+
+  // =========================
+  // Helpers (TZ-safe "now")
+  // =========================
+  function nowInTZAsUTCDate(tz){
+    const parts = new Intl.DateTimeFormat("en-US",{
+      timeZone:tz,
+      year:"numeric",month:"2-digit",day:"2-digit",
+      hour:"2-digit",minute:"2-digit",second:"2-digit",
+      hour12:false
+    }).formatToParts(new Date());
+    const get = t => Number(parts.find(p=>p.type===t).value);
+    return new Date(Date.UTC(get("year"), get("month")-1, get("day"), get("hour"), get("minute"), get("second")));
   }
 
-  function nextNewYear(){
-    const now = new Date();
-    const y = now.getMonth() === 0 && now.getDate() === 1
-      ? now.getFullYear()
-      : now.getFullYear() + 1;
-    return new Date(y,0,1,0,0,0);
+  function isNewYearInTZ(nowTZ_utcEncoded){
+    return nowTZ_utcEncoded.getUTCMonth() === 0 && nowTZ_utcEncoded.getUTCDate() === 1;
   }
 
-  function update(){
-    const aText = document.getElementById("answerText");
-    const aEmoji = document.getElementById("answerEmoji");
-    const sub = document.getElementById("subtitle");
-    const cd = document.getElementById("countdown");
-    const h1 = document.getElementById("answer");
+  function nextNewYearInTZ(nowTZ_utcEncoded){
+    const y = nowTZ_utcEncoded.getUTCFullYear();
+    const m = nowTZ_utcEncoded.getUTCMonth() + 1;
+    const d = nowTZ_utcEncoded.getUTCDate();
+    const next = (m > 1 || (m === 1 && d > 1)) ? y + 1 : y;
+    return new Date(Date.UTC(next, 0, 1, 0, 0, 0));
+  }
 
-    if(isNewYear()){
-      h1.className="yes";
-      aText.textContent="Sí";
-      aEmoji.textContent="🎉";
-      sub.textContent="¡Hoy es Año Nuevo! 🥂";
-      cd.textContent="Salud, abrazos y nuevos comienzos ✨";
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  function setAnswer({ mode, text, emoji }){
+    document.getElementById("answer").className = mode;
+    document.getElementById("answerText").textContent = text;
+    document.getElementById("answerEmoji").textContent = emoji;
+  }
+
+  // =========================
+  // Main text
+  // =========================
+  function updateText(){
+    const nowTZ = nowInTZAsUTCDate(TZ);
+
+    const subtitle = document.getElementById("subtitle");
+    const countdown = document.getElementById("countdown");
+
+    if(isNewYearInTZ(nowTZ)){
+      setAnswer({ mode:"yes", text:"Sí", emoji:"🎉" });
+      subtitle.textContent = "¡Hoy es Año Nuevo! 🥂";
+      countdown.textContent = "Salud, abrazos y nuevos comienzos ✨";
       return;
     }
 
-    const diff = nextNewYear() - new Date();
-    const s = Math.floor(diff/1000);
-    const h = Math.floor(s/3600);
-    const m = Math.floor((s%3600)/60);
-    const sec = s%60;
+    const diffMs = nextNewYearInTZ(nowTZ) - nowTZ;
+    const totalSec = Math.max(0, Math.ceil(diffMs / 1000));
+    const hours = Math.floor(totalSec / 3600);
+    const minutes = Math.floor((totalSec % 3600) / 60);
+    const seconds = totalSec % 60;
 
-    cd.textContent = `Faltan ${h}h ${m}m ${sec}s para Año Nuevo.`;
+    countdown.textContent = `Faltan ${hours}h ${pad2(minutes)}m ${pad2(seconds)}s para Año Nuevo.`;
 
-    if(h < 24){
-      h1.className="yes";
-      aText.textContent="No";
-      aEmoji.textContent="🤩";
-      sub.textContent="No, pero estamos a nada 🎇";
+    // Siempre debe estar el "No"
+    if(hours <= 24){
+      setAnswer({ mode:"yes", text:"No", emoji:"🤩" });
+      subtitle.textContent = "No, pero… estamos a nada 🎇";
+    } else if(hours <= 24*7){
+      setAnswer({ mode:"yes", text:"No", emoji:"😄" });
+      subtitle.textContent = "No, pero… falta poco 🎶";
     } else {
-      h1.className="no";
-      aText.textContent="No";
-      aEmoji.textContent="😢";
-      sub.textContent="Todavía no es Año Nuevo.";
+      setAnswer({ mode:"no", text:"No", emoji:"😢" });
+      subtitle.textContent = "Todavía no es Año Nuevo.";
     }
   }
 
-  setInterval(update,1000);
-  update();
-
-  // Fuegos artificiales simples
-  const canvas = document.getElementById("fx");
-  const ctx = canvas.getContext("2d");
-  function resize(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+  // =========================
+  // Weather (real for fixed dates)
+  // =========================
+  function codeToEmoji(c){
+    c = Number(c);
+    if(c === 0) return "☀️";
+    if(c === 1 || c === 2) return "🌤️";
+    if(c === 3) return "☁️";
+    if(c === 45 || c === 48) return "🌫️";
+    if((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return "🌧️";
+    if(c >= 71 && c <= 77) return "🌨️";
+    if(c >= 95) return "⛈️";
+    return "🌙";
   }
-  resize();
-  window.onresize = resize;
 
-  function fire(){
-    for(let i=0;i<120;i++){
-      const x = Math.random()*canvas.width;
-      const y = Math.random()*canvas.height/2;
-      ctx.fillStyle = `hsl(${Math.random()*360} 100% 70%)`;
-      ctx.beginPath();
-      ctx.arc(x,y,2,0,Math.PI*2);
-      ctx.fill();
+  function setWx(dayKey, label, emoji, min, max){
+    document.getElementById(`wxEmoji${dayKey}`).textContent = emoji;
+    document.getElementById(`wxLine${dayKey}`).textContent =
+      `${label}: mín ${Math.round(min)}° · máx ${Math.round(max)}°`;
+  }
+
+  function setWxLoading(){
+    document.getElementById("wxLoc").textContent = "…";
+    document.getElementById("wxEmoji31").textContent = "…";
+    document.getElementById("wxEmoji01").textContent = "…";
+    document.getElementById("wxLine31").textContent = "Cargando…";
+    document.getElementById("wxLine01").textContent = "Cargando…";
+    document.getElementById("wxFooter").textContent = "";
+  }
+
+  function applyFallback(){
+    const geo = TZ_GEO[TZ] || TZ_GEO["America/Argentina/Buenos_Aires"];
+    const fb = FALLBACK[TZ] || FALLBACK["America/Argentina/Buenos_Aires"];
+
+    document.getElementById("wxLoc").textContent = `📍 ${geo.name}`;
+    setWx("31", "31/12/2025", fb.e31, fb.min31, fb.max31);
+    setWx("01", "01/01/2026", fb.e01, fb.min01, fb.max01);
+    document.getElementById("wxFooter").textContent =
+      "No pude traer el pronóstico ahora. Mostrando valores típicos (fallback).";
+  }
+
+  async function loadWeatherForTZ(){
+    setWxLoading();
+
+    const geo = TZ_GEO[TZ] || TZ_GEO["America/Argentina/Buenos_Aires"];
+    document.getElementById("wxLoc").textContent = `📍 ${geo.name}`;
+
+    const url = new URL("https://api.open-meteo.com/v1/forecast");
+    url.searchParams.set("latitude", String(geo.lat));
+    url.searchParams.set("longitude", String(geo.lon));
+    url.searchParams.set("timezone", TZ); // clave: alinear fechas
+    url.searchParams.set("forecast_days", "16");
+    url.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,weather_code");
+
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 6500);
+
+    try{
+      const res = await fetch(url.toString(), { cache:"no-store", signal: ctrl.signal });
+      clearTimeout(t);
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+
+      const daily = data?.daily || {};
+      const times = daily.time || [];
+      const i31 = times.indexOf(TARGET_31);
+      const i01 = times.indexOf(TARGET_01);
+
+      if(i31 === -1 || i01 === -1){
+        // si no vienen, puede ser ventana/fetch raro; mostramos fallback prolijo
+        applyFallback();
+        document.getElementById("wxFooter").textContent =
+          "El proveedor no devolvió esas fechas en la ventana del pronóstico. Mostrando fallback.";
+        return;
+      }
+
+      setWx("31", "31/12/2025",
+        codeToEmoji(daily.weather_code[i31]),
+        daily.temperature_2m_min[i31],
+        daily.temperature_2m_max[i31]
+      );
+
+      setWx("01", "01/01/2026",
+        codeToEmoji(daily.weather_code[i01]),
+        daily.temperature_2m_min[i01],
+        daily.temperature_2m_max[i01]
+      );
+
+      document.getElementById("wxFooter").textContent =
+        "Fuente: Open-Meteo · Fechas calculadas en tu zona horaria seleccionada.";
+    } catch(e){
+      clearTimeout(t);
+      applyFallback();
     }
-    setTimeout(()=>ctx.clearRect(0,0,canvas.width,canvas.height),800);
   }
 
-  document.getElementById("btnFire").onclick = fire;
+  // =========================
+  // Fireworks (realistic)
+  // =========================
+  const FX = (() => {
+    const canvas = document.getElementById("fx");
+    const ctx = canvas.getContext("2d", { alpha:true });
+
+    let w=0, h=0, dpr=1;
+    let party = false;
+
+    const rockets = [];
+    const sparks = [];
+
+    const isMobile = () => Math.min(window.innerWidth, window.innerHeight) < 520;
+
+    function resize(){
+      dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+
+    function rand(min,max){ return Math.random()*(max-min)+min; }
+
+    function setPartyFromDate(){
+      const nowTZ = nowInTZAsUTCDate(TZ);
+      const mm = nowTZ.getUTCMonth()+1;
+      const dd = nowTZ.getUTCDate();
+      party = (mm === 12 && dd === 31) || (mm === 1 && dd === 1);
+    }
+
+    function launchRocket(x = rand(w*0.08, w*0.92)){
+      const startY = h + rand(20, 120);
+      const targetY = rand(h*0.12, h*0.92); // ✅ ahora puede explotar en casi toda la pantalla
+      rockets.push({
+        x,
+        y: startY,
+        vx: rand(-0.7, 0.7),
+        vy: rand(-12.5, -9.5),
+        targetY,
+        hue: rand(0, 360),
+        life: rand(40, 90),
+        trail: []
+      });
+    }
+
+    function burst(x,y,hue){
+      const count = Math.floor(rand(isMobile()? 70 : 110, isMobile()? 120 : 190));
+      const base = hue + rand(-18, 18);
+
+      // anillo principal
+      for(let i=0;i<count;i++){
+        const a = rand(0, Math.PI*2);
+        const sp = rand(1.2, 6.2);
+        sparks.push({
+          x, y,
+          vx: Math.cos(a)*sp,
+          vy: Math.sin(a)*sp,
+          g: 0.06,
+          drag: 0.985,
+          hue: base + rand(-25, 25),
+          alpha: rand(0.55, 0.98),
+          r: rand(1.0, isMobile()? 2.1 : 2.5),
+          ttl: rand(55, 150),
+          age: 0,
+          tw: rand(0.6, 1.3) // “twinkle”
+        });
+      }
+
+      // centro brillante (pocas partículas lentas)
+      const core = Math.floor(rand(12, 26));
+      for(let i=0;i<core;i++){
+        const a = rand(0, Math.PI*2);
+        const sp = rand(0.6, 2.3);
+        sparks.push({
+          x, y,
+          vx: Math.cos(a)*sp,
+          vy: Math.sin(a)*sp,
+          g: 0.05,
+          drag: 0.99,
+          hue: base + rand(-10, 10),
+          alpha: rand(0.35, 0.70),
+          r: rand(1.2, 2.8),
+          ttl: rand(45, 110),
+          age: 0,
+          tw: rand(0.7, 1.1)
+        });
+      }
+    }
+
+    function glowDot(x,y,r,hue,a){
+      ctx.globalAlpha = a * 0.18;
+      ctx.fillStyle = `hsla(${hue} 100% 75% / 1)`;
+      ctx.beginPath(); ctx.arc(x,y,r*4.0,0,Math.PI*2); ctx.fill();
+
+      ctx.globalAlpha = a;
+      ctx.fillStyle = `hsla(${hue} 100% 70% / 1)`;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+
+    function step(){
+      // fade suave (sin borrar “duro”)
+      ctx.fillStyle = `rgba(0,0,0,${party ? 0.13 : 0.09})`;
+      ctx.fillRect(0,0,w,h);
+
+      // cohetes
+      for(let i=rockets.length-1;i>=0;i--){
+        const r = rockets[i];
+
+        // trail
+        r.trail.push({x:r.x, y:r.y});
+        if(r.trail.length > (isMobile()? 8 : 12)) r.trail.shift();
+
+        r.x += r.vx;
+        r.y += r.vy;
+        r.vy += 0.05;     // gravedad ligera
+        r.vx *= 0.995;
+        r.life--;
+
+        // dibujar estela
+        ctx.globalAlpha = 0.65;
+        for(let t=0;t<r.trail.length;t++){
+          const p = r.trail[t];
+          const a = (t+1)/r.trail.length * 0.6;
+          glowDot(p.x, p.y, 1.1, r.hue, a);
+        }
+        ctx.globalAlpha = 1;
+
+        // “head”
+        glowDot(r.x, r.y, 1.5, r.hue, 0.9);
+
+        if(r.y <= r.targetY || r.life <= 0){
+          burst(r.x, r.y, r.hue);
+          rockets.splice(i,1);
+        }
+      }
+
+      // partículas
+      for(let i=sparks.length-1;i>=0;i--){
+        const p = sparks[i];
+        p.age++;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        p.vy += p.g;
+        p.vx *= p.drag;
+        p.vy *= p.drag;
+
+        const t = p.age / p.ttl;
+        let a = p.alpha * (1 - t);
+
+        // twinkle
+        a *= (0.75 + 0.25*Math.sin(p.age * p.tw));
+
+        glowDot(p.x, p.y, p.r, p.hue, Math.max(0, a));
+
+        if(p.age >= p.ttl) sparks.splice(i,1);
+      }
+
+      // auto-launch si party
+      if(party){
+        const maxRockets = isMobile()? 7 : 12;
+        const chance = isMobile()? 0.22 : 0.30;
+        if(rockets.length < maxRockets && Math.random() < chance){
+          launchRocket();
+          if(!isMobile() && Math.random() < 0.30) launchRocket();
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    function manualShow(){
+      // varias explosiones en TODA la pantalla
+      const bursts = isMobile()? 3 : 5;
+      for(let i=0;i<bursts;i++){
+        setTimeout(()=>{
+          const x = rand(w*0.10, w*0.90);
+          const y = rand(h*0.12, h*0.92); // ✅ full screen
+          burst(x, y, rand(0, 360));
+        }, i*(isMobile()? 220 : 170));
+      }
+    }
+
+    resize();
+    setPartyFromDate();
+    window.addEventListener("resize", resize);
+    setInterval(setPartyFromDate, 60_000);
+    requestAnimationFrame(step);
+
+    return { manualShow, refreshParty: setPartyFromDate };
+  })();
+
+  // =========================
+  // TZ select
+  // =========================
+  function setupTZSelect(){
+    const sel = document.getElementById("tzSelect");
+    sel.innerHTML = "";
+
+    for(const opt of TZ_OPTIONS){
+      const o = document.createElement("option");
+      o.value = opt.id;
+      o.textContent = opt.label;
+      if(opt.id === TZ) o.selected = true;
+      sel.appendChild(o);
+    }
+
+    sel.addEventListener("change", () => {
+      TZ = sel.value;
+      localStorage.setItem(STORAGE_KEY, TZ);
+      updateText();
+      loadWeatherForTZ();
+      FX.refreshParty();
+    });
+  }
+
+  // =========================
+  // Init
+  // =========================
+  setupTZSelect();
+  updateText();
+  setInterval(updateText, 1000);
+  loadWeatherForTZ();
+
+  // Button fireworks
+  const btn = document.getElementById("btnFire");
+  const btnLabel = document.getElementById("btnFireLabel");
+  btn.addEventListener("click", () => {
+    btn.disabled = true;
+    btnLabel.textContent = "¡Boom! 🎇";
+    FX.manualShow();
+    setTimeout(() => {
+      btn.disabled = false;
+      btnLabel.textContent = "Lanzar fuegos artificiales";
+    }, 1200);
+  });
 </script>
-
 </body>
 </html>
