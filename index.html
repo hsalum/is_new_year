@@ -5,33 +5,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>¿Es Año Nuevo?</title>
   <meta name="theme-color" content="#060a1f" />
-
   <style>
     :root{
-      --bg1:#05061a;
-      --bg2:#0b0f2a;
+      --bg1:#05061a; --bg2:#0b0f2a;
       --card: rgba(255,255,255,.06);
       --stroke: rgba(255,255,255,.12);
       --text: rgba(255,255,255,.92);
       --muted: rgba(255,255,255,.68);
-      --gold:#ffd166;
-      --pink:#ff4d8d;
-      --cyan:#37d6ff;
-      --neon:#7c5cff;
-      --mint:#2ee6a6;
+      --gold:#ffd166; --pink:#ff4d8d; --cyan:#37d6ff; --neon:#7c5cff; --mint:#2ee6a6;
     }
-
     *{ box-sizing:border-box; }
     html, body { height: 100%; }
-
     body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:28px;
-      color:var(--text);
+      margin:0; min-height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      padding:28px; color:var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
       background:
         radial-gradient(900px 500px at 15% 15%, rgba(55,214,255,.16), transparent 60%),
@@ -40,20 +28,9 @@
         linear-gradient(180deg, var(--bg1), var(--bg2));
       overflow:hidden;
     }
-
-    canvas#fx{
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      z-index:0;
-    }
-
+    canvas#fx{ position:fixed; inset:0; pointer-events:none; z-index:0; }
     .stars{
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      z-index:0;
-      opacity:.55;
+      position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.55;
       background-image:
         radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.55), transparent 60%),
         radial-gradient(1px 1px at 84% 22%, rgba(255,255,255,.40), transparent 60%),
@@ -62,62 +39,36 @@
         radial-gradient(1px 1px at 70% 86%, rgba(255,255,255,.28), transparent 60%);
       filter: blur(.15px);
     }
-
-    .wrap{
-      width:min(860px, 100%);
-      text-align:center;
-      position:relative;
-      z-index:1;
-    }
-
+    .wrap{ width:min(900px, 100%); text-align:center; position:relative; z-index:1; }
     .card{
-      position:relative;
-      padding:28px 22px 22px;
-      border-radius:22px;
-      background:var(--card);
+      position:relative; padding:28px 22px 22px;
+      border-radius:22px; background:var(--card);
       border:1px solid var(--stroke);
       backdrop-filter: blur(10px);
       box-shadow: 0 30px 90px rgba(0,0,0,.45);
       overflow:hidden;
     }
-
     .glowTop{
-      position:absolute;
-      inset:-90px -110px auto -110px;
-      height:210px;
+      position:absolute; inset:-90px -110px auto -110px; height:210px;
       background: radial-gradient(closest-side, rgba(124,92,255,.18), transparent 70%);
-      filter: blur(10px);
-      pointer-events:none;
+      filter: blur(10px); pointer-events:none;
     }
-
     .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 12px;
-      border-radius:999px;
+      display:inline-flex; align-items:center; gap:10px;
+      padding:8px 12px; border-radius:999px;
       border:1px solid var(--stroke);
       background: rgba(0,0,0,.18);
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:14px;
-      user-select:none;
+      color:var(--muted); font-size:13px;
+      margin-bottom:14px; user-select:none;
     }
-
     .dot{
-      width:9px;
-      height:9px;
-      border-radius:50%;
+      width:9px; height:9px; border-radius:50%;
       background:var(--mint);
       box-shadow:0 0 0 6px rgba(46,230,166,.12);
       animation:pulse 1.6s ease-in-out infinite;
       flex: 0 0 auto;
     }
-
-    @keyframes pulse{
-      0%,100%{ transform:scale(1); opacity:1 }
-      50%{ transform:scale(1.2); opacity:.8 }
-    }
+    @keyframes pulse{ 0%,100%{ transform:scale(1); opacity:1 } 50%{ transform:scale(1.2); opacity:.8 } }
 
     select{
       appearance:none;
@@ -126,117 +77,64 @@
       color:var(--text);
       padding:6px 28px 6px 10px;
       border-radius:999px;
-      font-size:13px;
-      cursor:pointer;
-      outline:none;
+      font-size:13px; cursor:pointer; outline:none;
     }
-
     .selectWrap{ position:relative; display:inline-flex; align-items:center; }
-    .chev{
-      position:absolute;
-      right:10px;
-      opacity:.7;
-      pointer-events:none;
-      font-size:12px;
-      transform: translateY(1px);
-    }
+    .chev{ position:absolute; right:10px; opacity:.7; pointer-events:none; font-size:12px; transform: translateY(1px); }
 
-    h1{
-      margin:10px 0 6px;
-      font-size:clamp(42px, 6vw, 76px);
-      letter-spacing:-0.02em;
-    }
-
+    h1{ margin:10px 0 6px; font-size:clamp(42px, 6vw, 76px); letter-spacing:-0.02em; }
     .yes{
       background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
-      -webkit-background-clip:text;
-      background-clip:text;
-      color:transparent;
+      -webkit-background-clip:text; background-clip:text; color:transparent;
       text-shadow: 0 0 40px rgba(255,209,102,.06);
     }
-
     .no{
       background:linear-gradient(90deg,#fff,rgba(255,255,255,.55));
-      -webkit-background-clip:text;
-      background-clip:text;
-      color:transparent;
+      -webkit-background-clip:text; background-clip:text; color:transparent;
     }
+    .sub{ font-size:clamp(16px,2.2vw,20px); color:var(--muted); margin: 8px 0 0; }
+    .big{ margin-top:14px; font-size:clamp(18px,2.4vw,22px); color: rgba(255,255,255,.86); }
 
-    .sub{
-      font-size:clamp(16px,2.2vw,20px);
-      color:var(--muted);
-      margin: 8px 0 0;
-    }
-
-    .big{
-      margin-top:14px;
-      font-size:clamp(18px,2.4vw,22px);
-      color: rgba(255,255,255,.86);
-    }
-
-    .emojiLeft{
-      position:absolute; left:18px; top:18px;
-      font-size:18px; opacity:.8;
+    .emojiLeft, .emojiRight{
+      position:absolute; top:18px; font-size:18px; opacity:.8;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
       user-select:none;
     }
-    .emojiRight{
-      position:absolute; right:18px; top:18px;
-      font-size:18px; opacity:.8;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-      user-select:none;
-    }
+    .emojiLeft{ left:18px; }
+    .emojiRight{ right:18px; }
 
-    /* BIG PUSH BUTTON */
-    .btnRow{
-      margin-top: 16px;
-      display:flex;
-      gap:10px;
-      justify-content:center;
-      flex-wrap: wrap;
-    }
-
+    /* Push button */
+    .btnRow{ margin-top: 16px; display:flex; gap:10px; justify-content:center; flex-wrap: wrap; }
     .pushBtn{
       border: 1px solid rgba(255,255,255,.18);
       background: rgba(0,0,0,.22);
       color: rgba(255,255,255,.92);
-      padding: 14px 18px;
+      padding: 16px 20px;
       border-radius: 999px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 15px;
       letter-spacing: .2px;
       user-select:none;
       display:inline-flex;
       align-items:center;
-      gap:10px;
-
+      gap:12px;
       box-shadow:
-        0 18px 45px rgba(0,0,0,.35),
-        0 0 0 1px rgba(255,255,255,.04) inset;
-
+        0 22px 60px rgba(0,0,0,.42),
+        0 0 0 1px rgba(255,255,255,.05) inset;
       transition: transform .08s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
-      min-width: 280px;
+      min-width: 320px;
       justify-content:center;
     }
     .pushBtn:hover{
       background: rgba(0,0,0,.30);
-      border-color: rgba(255,255,255,.26);
+      border-color: rgba(255,255,255,.28);
       box-shadow:
-        0 22px 55px rgba(0,0,0,.45),
-        0 0 0 1px rgba(255,255,255,.05) inset;
+        0 28px 70px rgba(0,0,0,.52),
+        0 0 0 1px rgba(255,255,255,.06) inset;
     }
-    .pushBtn:active{
-      transform: translateY(2px);
-    }
-    .pushBtn:disabled{
-      opacity:.60;
-      cursor:not-allowed;
-      transform:none;
-    }
-    .pushBtn .ico{
-      font-size: 16px;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-    }
+    .pushBtn:active{ transform: translateY(2px); }
+    .pushBtn:disabled{ opacity:.60; cursor:not-allowed; transform:none; }
+    .pushBtn .ico{ font-size: 18px; }
 
     .miniBtn{
       border: 1px solid rgba(255,255,255,.14);
@@ -259,8 +157,7 @@
     /* Toast */
     .toast{
       position: fixed;
-      left: 50%;
-      top: 18px;
+      left: 50%; top: 18px;
       transform: translateX(-50%);
       z-index: 5;
       padding: 10px 12px;
@@ -275,18 +172,12 @@
       pointer-events:none;
       transition: opacity .18s ease, transform .18s ease;
       box-shadow: 0 18px 55px rgba(0,0,0,.35);
-      display:flex;
-      align-items:center;
-      gap:10px;
+      display:flex; align-items:center; gap:10px;
     }
-    .toast.show{
-      opacity: 1;
-      transform: translateX(-50%) translateY(4px);
-    }
+    .toast.show{ opacity: 1; transform: translateX(-50%) translateY(4px); }
 
     .weather{
-      margin-top: 18px;
-      text-align:left;
+      margin-top: 18px; text-align:left;
       border-top: 1px solid rgba(255,255,255,.12);
       padding-top: 14px;
     }
@@ -299,39 +190,17 @@
       margin-bottom: 10px;
       user-select:none;
     }
-    .weatherGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
+    .weatherGrid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     .wxCard{
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.14);
       border-radius: 16px;
       padding: 12px;
     }
-    .wxTop{
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom: 6px;
-      color: rgba(255,255,255,.86);
-      font-size: 13px;
-    }
-    .wxMeta{
-      color: rgba(255,255,255,.64);
-      font-size: 12px;
-      line-height: 1.35;
-    }
-    .wxBig{
-      margin-top: 8px;
-      color: rgba(255,255,255,.86);
-      font-size: 14px;
-    }
-    .wxNote{
-      margin-top: 8px;
-      color: rgba(255,255,255,.55);
-      font-size: 12px;
-    }
-
+    .wxTop{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px; color: rgba(255,255,255,.86); font-size: 13px; }
+    .wxMeta{ color: rgba(255,255,255,.64); font-size: 12px; line-height: 1.35; }
+    .wxBig{ margin-top: 8px; color: rgba(255,255,255,.86); font-size: 14px; }
+    .wxNote{ margin-top: 8px; color: rgba(255,255,255,.55); font-size: 12px; }
     @media (max-width:520px){
       .weatherGrid{ grid-template-columns: 1fr; }
       .pushBtn{ min-width: 100%; }
@@ -365,12 +234,12 @@
       <p class="big" id="countdown">…</p>
 
       <div class="btnRow">
-        <button class="pushBtn" id="btnFire" type="button" title="Dispara una tanda de fuegos en la pantalla">
+        <button class="pushBtn" id="btnFire" type="button">
           <span class="ico">🎆</span>
           <span id="btnFireLabel">Lanzar fuegos artificiales</span>
         </button>
 
-        <button class="miniBtn" id="btnWeather" type="button" title="Reintentar clima">
+        <button class="miniBtn" id="btnWeather" type="button">
           <span>🌤️</span><span>Reintentar clima</span>
         </button>
       </div>
@@ -383,20 +252,14 @@
 
         <div class="weatherGrid">
           <div class="wxCard">
-            <div class="wxTop">
-              <div id="wxDate31">31/12</div>
-              <div id="wxEmoji31">…</div>
-            </div>
+            <div class="wxTop"><div>31/12</div><div id="wxEmoji31">…</div></div>
             <div class="wxMeta" id="wxMeta31">Cargando…</div>
             <div class="wxBig" id="wxBig31"></div>
             <div class="wxNote" id="wxNote31"></div>
           </div>
 
           <div class="wxCard">
-            <div class="wxTop">
-              <div id="wxDate01">01/01</div>
-              <div id="wxEmoji01">…</div>
-            </div>
+            <div class="wxTop"><div>01/01</div><div id="wxEmoji01">…</div></div>
             <div class="wxMeta" id="wxMeta01">Cargando…</div>
             <div class="wxBig" id="wxBig01"></div>
             <div class="wxNote" id="wxNote01"></div>
@@ -410,21 +273,20 @@
 
 <script>
   // -----------------------------
-  // Utils UI
+  // Toast
   // -----------------------------
   let toastTimer = null;
   function showToast(text, icon="✨"){
     const t = document.getElementById("toast");
-    document.getElementById("toastText").textContent = text;
     t.firstElementChild.textContent = icon;
-
+    document.getElementById("toastText").textContent = text;
     t.classList.add("show");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(()=> t.classList.remove("show"), 1600);
   }
 
   // -----------------------------
-  // TZ + contador
+  // TZ
   // -----------------------------
   const TZ_OPTIONS = [
     { id:"America/Argentina/Buenos_Aires", label:"Argentina (Buenos Aires)" },
@@ -458,7 +320,6 @@
       hour:"2-digit",minute:"2-digit",second:"2-digit",
       hour12:false
     }).formatToParts(new Date());
-
     const get = t => Number(parts.find(p=>p.type===t).value);
     return new Date(Date.UTC(get("year"), get("month")-1, get("day"), get("hour"), get("minute"), get("second")));
   }
@@ -477,7 +338,6 @@
 
   function update(){
     const now = nowInTZAsUTCDate(TZ);
-
     const a = document.getElementById("answer");
     const st = document.getElementById("subtitle");
     const c = document.getElementById("countdown");
@@ -503,8 +363,8 @@
     const h = Math.floor(sec/3600);
     const m = Math.floor((sec%3600)/60);
     const s = sec%60;
-
     c.textContent = `Faltan ${h}h ${pad(m)}m ${pad(s)}s para Año Nuevo.`;
+
     leftEmoji.textContent = "✨";
     rightEmoji.textContent = "🌙";
   }
@@ -530,19 +390,17 @@
   }
 
   // -----------------------------
-  // Fondo: luces minimal siempre + fuegos solo 31/12 y 01/01
-  // + función manualShow() (botón)
+  // FX: luces + fuegos (auto solo 31/12 y 01/01 + manual)
   // -----------------------------
   const FX = (() => {
     const canvas = document.getElementById("fx");
     const ctx = canvas.getContext("2d", { alpha: true });
 
     let w=0, h=0, dpr=1;
-    let mode = "calm"; // calm | party
+    let mode = "calm";
     const rockets = [];
     const parts = [];
     const orbs = [];
-
     const isMobile = () => Math.min(window.innerWidth, window.innerHeight) < 520;
 
     function cfg(){
@@ -550,19 +408,15 @@
       return {
         fadeAlpha: party ? (isMobile()? 0.14 : 0.12) : 0.08,
         gravity: party ? 0.055 : 0.03,
-
-        // automático
         maxRockets: party ? (isMobile()? 10 : 16) : 0,
         launchChance: party ? (isMobile()? 0.22 : 0.30) : 0,
         burstMin: party ? (isMobile()? 48 : 70) : 0,
         burstMax: party ? (isMobile()? 88 : 120) : 0,
 
-        // manual (botón)
-        manualBurstMin: isMobile()? 65 : 95,
-        manualBurstMax: isMobile()? 120 : 170,
+        manualBurstMin: isMobile()? 70 : 105,
+        manualBurstMax: isMobile()? 130 : 190,
 
-        pMin: 1.0,
-        pMax: isMobile()? 2.1 : 2.4,
+        pMin: 1.0, pMax: isMobile()? 2.1 : 2.4,
         orbCount: isMobile()? 18 : 28,
       };
     }
@@ -570,8 +424,7 @@
 
     function resize(){
       dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      w = window.innerWidth;
-      h = window.innerHeight;
+      w = window.innerWidth; h = window.innerHeight;
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       canvas.style.width = w + "px";
@@ -580,18 +433,15 @@
       CFG = cfg();
       initOrbs();
     }
-
     function rand(min,max){ return Math.random()*(max-min)+min; }
 
     function initOrbs(){
       orbs.length = 0;
       for(let i=0;i<CFG.orbCount;i++){
         orbs.push({
-          x: rand(0,w),
-          y: rand(0,h),
+          x: rand(0,w), y: rand(0,h),
           r: rand(18, 52),
-          vx: rand(-0.12, 0.12),
-          vy: rand(-0.08, 0.08),
+          vx: rand(-0.12, 0.12), vy: rand(-0.08, 0.08),
           hue: rand(185, 335),
           a: rand(0.06, 0.14)
         });
@@ -611,8 +461,7 @@
     function launch(){
       const x = rand(w*0.10, w*0.90);
       rockets.push({
-        x,
-        y: h + rand(10, 80),
+        x, y: h + rand(10, 80),
         vx: rand(-0.9, 0.9),
         vy: rand(-13.6, -10.8),
         targetY: rand(h*0.14, h*0.55),
@@ -625,44 +474,29 @@
       const count = Math.floor(rand(minCount, maxCount));
       for(let i=0;i<count;i++){
         const a = rand(0, Math.PI*2);
-        const sp = rand(1.6, 5.8);
+        const sp = rand(1.6, 6.0);
         const hue = hueBase + rand(-28, 28);
         const alpha = rand(0.55, 0.95);
         const r = rand(CFG.pMin, CFG.pMax);
-        const ttl = rand(55, 130);
-
-        parts.push({
-          x, y,
-          vx: Math.cos(a)*sp,
-          vy: Math.sin(a)*sp,
-          hue,
-          alpha,
-          r,
-          ttl,
-          age: 0
-        });
+        const ttl = rand(55, 135);
+        parts.push({ x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, hue, alpha, r, ttl, age:0 });
       }
     }
 
     function drawGlowCircle(x,y,r, hue, alpha){
       ctx.globalAlpha = alpha * 0.22;
       ctx.fillStyle = `hsla(${hue} 100% 75% / 1)`;
-      ctx.beginPath();
-      ctx.arc(x,y,r*3.2,0,Math.PI*2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(x,y,r*3.2,0,Math.PI*2); ctx.fill();
 
       ctx.globalAlpha = alpha;
       ctx.fillStyle = `hsla(${hue} 100% 70% / 1)`;
-      ctx.beginPath();
-      ctx.arc(x,y,r,0,Math.PI*2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
     }
 
     function step(){
       ctx.fillStyle = `rgba(0,0,0,${CFG.fadeAlpha})`;
       ctx.fillRect(0,0,w,h);
 
-      // lucecitas
       for(const o of orbs){
         o.x += o.vx; o.y += o.vy;
         if(o.x < -80) o.x = w+80;
@@ -672,43 +506,34 @@
 
         ctx.globalAlpha = o.a;
         ctx.fillStyle = `hsla(${o.hue} 100% 70% / 1)`;
-        ctx.beginPath();
-        ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fill();
       }
       ctx.globalAlpha = 1;
 
-      // Partículas (sirve para modo calm + disparos manuales)
       for(let i=parts.length-1;i>=0;i--){
         const p = parts[i];
         p.age++;
-        p.x += p.vx;
-        p.y += p.vy;
+        p.x += p.vx; p.y += p.vy;
         p.vy += (mode === "party") ? CFG.gravity : 0.04;
-        p.vx *= 0.985;
-        p.vy *= 0.985;
+        p.vx *= 0.985; p.vy *= 0.985;
 
         const t = p.age / p.ttl;
-        const fade = (1 - t);
-        const a = p.alpha * fade;
-
+        const a = p.alpha * (1 - t);
         drawGlowCircle(p.x, p.y, p.r, p.hue, a);
+
         if(p.age >= p.ttl) parts.splice(i,1);
       }
 
       if(mode === "party"){
         for(let i=rockets.length-1;i>=0;i--){
           const r = rockets[i];
-          r.x += r.vx;
-          r.y += r.vy;
+          r.x += r.vx; r.y += r.vy;
           r.vy += CFG.gravity*0.22;
           r.life--;
 
           ctx.globalAlpha = 0.85;
           ctx.fillStyle = "rgba(255,255,255,0.9)";
-          ctx.beginPath();
-          ctx.arc(r.x, r.y, 1.35, 0, Math.PI*2);
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(r.x, r.y, 1.35, 0, Math.PI*2); ctx.fill();
 
           if(r.y <= r.targetY || r.life <= 0){
             burstAt(r.x, r.y, r.hue, CFG.burstMin, CFG.burstMax);
@@ -734,13 +559,7 @@
       const bursts = isMobile() ? 3 : 5;
       for(let i=0;i<bursts;i++){
         setTimeout(() => {
-          burstAt(
-            rand(w*0.18, w*0.82),
-            rand(h*0.18, h*0.52),
-            rand(190, 340),
-            CFG.manualBurstMin,
-            CFG.manualBurstMax
-          );
+          burstAt(rand(w*0.18, w*0.82), rand(h*0.18, h*0.52), rand(190, 340), CFG.manualBurstMin, CFG.manualBurstMax);
         }, i * (isMobile() ? 190 : 150));
       }
     }
@@ -755,53 +574,8 @@
   })();
 
   // -----------------------------
-  // Clima (31/12 y 01/01) - Open-Meteo robusto
+  // Clima: real si se puede, si no -> modo offline (histórico + chiste)
   // -----------------------------
-  const WEATHER_CACHE_TTL_MS = 30 * 60 * 1000; // 30 min
-
-  function isoDateUTC(y,m,d){
-    return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-  }
-
-  function getDec31AndJan1Dates(nowTZ){
-    const ny = nextNewYear(nowTZ);
-    const targetYear = ny.getUTCFullYear();
-    const dec31 = { y: targetYear-1, m: 12, d: 31 };
-    const jan01 = { y: targetYear,   m: 1,  d: 1  };
-    return {
-      dec31Iso: isoDateUTC(dec31.y, dec31.m, dec31.d),
-      jan01Iso: isoDateUTC(jan01.y, jan01.m, jan01.d),
-      yearHint: `${dec31.y} → ${jan01.y}`
-    };
-  }
-
-  function wxLabelFromCode(code){
-    const c = Number(code);
-    if([0].includes(c)) return { emoji:"☀️", txt:"Despejado" };
-    if([1,2].includes(c)) return { emoji:"🌤️", txt:"Parcialmente nublado" };
-    if([3].includes(c)) return { emoji:"☁️", txt:"Nublado" };
-    if([45,48].includes(c)) return { emoji:"🌫️", txt:"Niebla / bruma" };
-    if([51,53,55].includes(c)) return { emoji:"🌦️", txt:"Llovizna" };
-    if([61,63,65].includes(c)) return { emoji:"🌧️", txt:"Lluvia" };
-    if([66,67].includes(c)) return { emoji:"🌧️", txt:"Lluvia helada" };
-    if([71,73,75,77].includes(c)) return { emoji:"🌨️", txt:"Nieve" };
-    if([80,81,82].includes(c)) return { emoji:"🌧️", txt:"Chubascos" };
-    if([95].includes(c)) return { emoji:"⛈️", txt:"Tormentas" };
-    if([96,99].includes(c)) return { emoji:"⛈️", txt:"Tormentas fuertes" };
-    return { emoji:"🌙", txt:"Variable" };
-  }
-
-  function partyAdvice(wx){
-    const { emoji, txt } = wx;
-    if(emoji === "⛈️") return "Pro tip: brindis bajo techo y playlist a todo volumen.";
-    if(emoji === "🌧️" || emoji === "🌦️") return "Paraguas + zapatillas sacrificables. Brindar igual: sí.";
-    if(emoji === "🌫️") return "Niebla mística: ideal para foto aesthetic (y abrigo).";
-    if(emoji === "🌨️") return "Modo polar activado: brindis con guantes, por favor.";
-    if(emoji === "☀️") return "Clima premium: terraza y brindis con vista.";
-    if(emoji === "🌤️") return "Bastante bien: abrigo liviano y a disfrutar.";
-    return `Clima ${txt.toLowerCase()}: improvisar con estilo.`;
-  }
-
   function setWxLoading(){
     ["31","01"].forEach(k=>{
       document.getElementById(`wxEmoji${k}`).textContent = "…";
@@ -812,101 +586,48 @@
     document.getElementById("wxFooter").textContent = "";
   }
 
-  function setWxError(msg, footer=""){
-    ["31","01"].forEach(k=>{
-      document.getElementById(`wxEmoji${k}`).textContent = "🤷";
-      document.getElementById(`wxMeta${k}`).textContent = "No pude traer el clima.";
-      document.getElementById(`wxBig${k}`).textContent = msg || "Probá reintentar.";
-      document.getElementById(`wxNote${k}`).textContent = "";
-    });
-    document.getElementById("wxFooter").textContent = footer;
-  }
+  function setWxOffline(city, hint){
+    // datos “típicos” (aprox) para fin de año. No es pronóstico real.
+    // Si querés, los ajustamos más por ciudad (BA/MD/NY/LA etc.)
+    const presets = {
+      "Buenos Aires": { tmin: 20, tmax: 29, wx:"Caluroso/variable", emoji:"🌤️", wind: 18, pr: 2 },
+      "CDMX":         { tmin: 8,  tmax: 21, wx:"Fresco y seco",     emoji:"☀️", wind: 14, pr: 0 },
+      "Santiago":     { tmin: 14, tmax: 28, wx:"Seco y cálido",     emoji:"☀️", wind: 20, pr: 0 },
+      "Lima":         { tmin: 20, tmax: 27, wx:"Húmedo/templado",   emoji:"🌤️", wind: 16, pr: 0 },
+      "Bogotá":       { tmin: 9,  tmax: 19, wx:"Fresco + chances",  emoji:"🌦️", wind: 12, pr: 4 },
+      "New York":     { tmin: -2, tmax: 5,  wx:"Frío",              emoji:"🥶", wind: 24, pr: 1 },
+      "Los Ángeles":  { tmin: 8,  tmax: 19, wx:"Fresco/agradable",  emoji:"🌤️", wind: 14, pr: 0 },
+      "Madrid":       { tmin: 1,  tmax: 10, wx:"Frío",              emoji:"❄️", wind: 18, pr: 1 },
+    };
+    const p = presets[city] || { tmin: 12, tmax: 24, wx:"Variable", emoji:"🌙", wind: 15, pr: 1 };
 
-  function paintWx(dayKey, label, wxTxt, emoji, tmin, tmax, wind, pr){
-    document.getElementById(`wxEmoji${dayKey}`).textContent = emoji;
-    document.getElementById(`wxMeta${dayKey}`).textContent = `${label} · ${wxTxt}`;
-    document.getElementById(`wxBig${dayKey}`).textContent =
-      `🌡️ ${Math.round(tmin)}° / ${Math.round(tmax)}° · 💨 ${Math.round(wind)} km/h · 💧 ${Math.round(pr)} mm`;
-    document.getElementById(`wxNote${dayKey}`).textContent =
-      partyAdvice({emoji, txt: wxTxt});
-  }
-
-  function cacheKeyForTZ(tz){
-    return `esanionuevo_weather_cache_${tz}`;
-  }
-
-  function readCache(tz){
-    try{
-      const raw = localStorage.getItem(cacheKeyForTZ(tz));
-      if(!raw) return null;
-      const obj = JSON.parse(raw);
-      if(!obj || !obj.ts || !obj.data) return null;
-      if(Date.now() - obj.ts > WEATHER_CACHE_TTL_MS) return null;
-      return obj.data;
-    }catch{ return null; }
-  }
-
-  function writeCache(tz, data){
-    try{
-      localStorage.setItem(cacheKeyForTZ(tz), JSON.stringify({ ts: Date.now(), data }));
-    }catch{}
-  }
-
-  async function fetchWithTimeout(url, timeoutMs){
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), timeoutMs);
-    try{
-      const res = await fetch(url, { cache:"no-store", signal: ctrl.signal });
-      return res;
-    } finally {
-      clearTimeout(t);
+    function paint(dayKey, label){
+      document.getElementById(`wxEmoji${dayKey}`).textContent = p.emoji;
+      document.getElementById(`wxMeta${dayKey}`).textContent = `${label} · Modo offline`;
+      document.getElementById(`wxBig${dayKey}`).textContent =
+        `🌡️ ~${p.tmin}° / ~${p.tmax}° · 💨 ~${p.wind} km/h · 💧 ~${p.pr} mm`;
+      document.getElementById(`wxNote${dayKey}`).textContent =
+        `Dato “típico”: ${p.wx}. ${hint}`;
     }
+
+    paint("31", "31/12");
+    paint("01", "01/01");
+    document.getElementById("wxFooter").textContent =
+      `Modo offline: tu red bloquea el servicio de pronóstico. Esto NO es pronóstico real; son valores típicos aproximados para ${city}.`;
   }
 
-  async function fetchWeatherJSON(url, attempts=3){
-    let lastErr = null;
-    for(let i=0;i<attempts;i++){
-      try{
-        const res = await fetchWithTimeout(url, 15000); // 15s
-        if(!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-      }catch(e){
-        lastErr = e;
-        // backoff suave
-        await new Promise(r => setTimeout(r, 350 + i*450));
-      }
-    }
-    throw lastErr || new Error("Fetch failed");
-  }
-
-  async function refreshWeather(force=false){
+  async function refreshWeather(){
     setWxLoading();
-
     const geo = TZ_GEO[TZ] || TZ_GEO["America/Argentina/Buenos_Aires"];
     document.getElementById("wxLoc").textContent = `📍 ${geo.name}`;
 
-    const nowTZ = nowInTZAsUTCDate(TZ);
-    const { dec31Iso, jan01Iso, yearHint } = getDec31AndJan1Dates(nowTZ);
-
-    // cache
-    if(!force){
-      const cached = readCache(TZ);
-      if(cached){
-        try{
-          renderWeatherFromData(cached, dec31Iso, jan01Iso, yearHint, geo);
-          return;
-        }catch{
-          // si el cache está raro, seguimos al fetch
-        }
-      }
-    }
-
-    const api = new URL("https://api.open-meteo.com/v1/forecast");
-    api.searchParams.set("latitude", String(geo.lat));
-    api.searchParams.set("longitude", String(geo.lon));
-    api.searchParams.set("timezone", "auto");
-    api.searchParams.set("forecast_days", "16");
-    api.searchParams.set("daily", [
+    // Si el dominio está bloqueado, va a fallar rápido o por timeout.
+    const url = new URL("https://api.open-meteo.com/v1/forecast");
+    url.searchParams.set("latitude", String(geo.lat));
+    url.searchParams.set("longitude", String(geo.lon));
+    url.searchParams.set("timezone", "auto");
+    url.searchParams.set("forecast_days", "16");
+    url.searchParams.set("daily", [
       "weather_code",
       "temperature_2m_max",
       "temperature_2m_min",
@@ -914,52 +635,85 @@
       "windspeed_10m_max"
     ].join(","));
 
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6500);
+
     try{
-      const data = await fetchWeatherJSON(api.toString(), 3);
-      writeCache(TZ, data);
-      renderWeatherFromData(data, dec31Iso, jan01Iso, yearHint, geo);
+      const res = await fetch(url.toString(), { cache:"no-store", signal: ctrl.signal });
+      clearTimeout(t);
+      if(!res.ok) throw new Error("HTTP " + res.status);
+
+      const data = await res.json();
+      const daily = data?.daily;
+      const times = daily?.time || [];
+
+      // Elegimos el próximo 31/12 y 01/01 respecto al próximo 1/1
+      const nowTZ = nowInTZAsUTCDate(TZ);
+      const ny = nextNewYear(nowTZ);
+      const year = ny.getUTCFullYear();
+      const dec31Iso = `${year-1}-12-31`;
+      const jan01Iso = `${year}-01-01`;
+
+      const idx31 = times.indexOf(dec31Iso);
+      const idx01 = times.indexOf(jan01Iso);
+
+      // si no entra en ventana, igual mostramos algo offline (porque es inevitable)
+      if(idx31 === -1 || idx01 === -1){
+        setWxOffline(geo.name, "Tip: probá más cerca de la fecha 😄");
+        return;
+      }
+
+      function wxLabelFromCode(code){
+        const c = Number(code);
+        if([0].includes(c)) return { emoji:"☀️", txt:"Despejado" };
+        if([1,2].includes(c)) return { emoji:"🌤️", txt:"Parcialmente nublado" };
+        if([3].includes(c)) return { emoji:"☁️", txt:"Nublado" };
+        if([45,48].includes(c)) return { emoji:"🌫️", txt:"Niebla / bruma" };
+        if([51,53,55].includes(c)) return { emoji:"🌦️", txt:"Llovizna" };
+        if([61,63,65].includes(c)) return { emoji:"🌧️", txt:"Lluvia" };
+        if([71,73,75,77].includes(c)) return { emoji:"🌨️", txt:"Nieve" };
+        if([80,81,82].includes(c)) return { emoji:"🌧️", txt:"Chubascos" };
+        if([95,96,99].includes(c)) return { emoji:"⛈️", txt:"Tormentas" };
+        return { emoji:"🌙", txt:"Variable" };
+      }
+
+      function partyAdvice(emoji){
+        if(emoji === "⛈️") return "Brindis bajo techo y playlist a todo volumen.";
+        if(emoji === "🌧️" || emoji === "🌦️") return "Paraguas + zapatillas sacrificables.";
+        if(emoji === "🌫️") return "Niebla mística: foto aesthetic asegurada.";
+        if(emoji === "🌨️") return "Modo polar: brindis con guantes.";
+        if(emoji === "☀️") return "Clima premium: terraza + brindis con vista.";
+        if(emoji === "🌤️") return "Bien: abrigo liviano y a disfrutar.";
+        return "Improvisar con estilo 😄";
+      }
+
+      function paint(dayKey, iso, idx){
+        const wx = wxLabelFromCode(daily.weather_code[idx]);
+        const tmax = daily.temperature_2m_max[idx];
+        const tmin = daily.temperature_2m_min[idx];
+        const pr = daily.precipitation_sum[idx];
+        const wind = daily.windspeed_10m_max[idx];
+
+        document.getElementById(`wxEmoji${dayKey}`).textContent = wx.emoji;
+        document.getElementById(`wxMeta${dayKey}`).textContent = `${iso} · ${wx.txt}`;
+        document.getElementById(`wxBig${dayKey}`).textContent =
+          `🌡️ ${Math.round(tmin)}° / ${Math.round(tmax)}° · 💨 ${Math.round(wind)} km/h · 💧 ${Math.round(pr)} mm`;
+        document.getElementById(`wxNote${dayKey}`).textContent = partyAdvice(wx.emoji);
+      }
+
+      paint("31", dec31Iso, idx31);
+      paint("01", jan01Iso, idx01);
+      document.getElementById("wxFooter").textContent =
+        `Fuente: Open-Meteo (cuando no está bloqueado).`;
+
       showToast("Clima actualizado", "🌤️");
+
     }catch(e){
-      const msg = (e && e.name === "AbortError")
-        ? "La API tardó demasiado (timeout)."
-        : "No pude conectar con la API.";
-
-      setWxError(
-        `${msg} Probá “Reintentar clima”.`,
-        `Si estás en una red corporativa/AdBlock/DNS estricto, puede bloquear api.open-meteo.com. · Fechas: ${yearHint}`
-      );
+      clearTimeout(t);
+      // Fallback offline
+      setWxOffline(geo.name, "Si estás con AdBlock/DNS estricto/VPN, suele bloquear el dominio.");
+      showToast("Modo offline de clima", "🛰️");
     }
-  }
-
-  function renderWeatherFromData(data, dec31Iso, jan01Iso, yearHint, geo){
-    const daily = data?.daily;
-    const times = daily?.time || [];
-    const idx31 = times.indexOf(dec31Iso);
-    const idx01 = times.indexOf(jan01Iso);
-
-    if(idx31 === -1 || idx01 === -1){
-      setWxError(
-        "El pronóstico no llega hasta esas fechas (la API suele dar ~16 días).",
-        `Ubicación: ${geo.name}. Ventana: ${times[0] || "?"} → ${times[times.length-1] || "?"}. · Fechas: ${yearHint}`
-      );
-      return;
-    }
-
-    const wx31 = wxLabelFromCode(daily.weather_code[idx31]);
-    const wx01 = wxLabelFromCode(daily.weather_code[idx01]);
-
-    paintWx("31", dec31Iso, wx31.txt, wx31.emoji,
-      daily.temperature_2m_min[idx31], daily.temperature_2m_max[idx31],
-      daily.windspeed_10m_max[idx31], daily.precipitation_sum[idx31]
-    );
-
-    paintWx("01", jan01Iso, wx01.txt, wx01.emoji,
-      daily.temperature_2m_min[idx01], daily.temperature_2m_max[idx01],
-      daily.windspeed_10m_max[idx01], daily.precipitation_sum[idx01]
-    );
-
-    document.getElementById("wxFooter").textContent =
-      `Fuente: Open-Meteo. Ubicación aproximada para la TZ: ${geo.name}. Fechas: ${yearHint}.`;
   }
 
   // -----------------------------
@@ -968,12 +722,11 @@
   setupTZ();
   update();
   setInterval(update, 250);
-  refreshWeather(false);
+  refreshWeather();
 
-  // Botón fuegos (push + texto “Recargando…” + toast)
+  // Botón fuegos
   const btnFire = document.getElementById("btnFire");
   const btnFireLabel = document.getElementById("btnFireLabel");
-
   btnFire.addEventListener("click", () => {
     btnFire.disabled = true;
     btnFireLabel.textContent = "Recargando…";
@@ -988,7 +741,7 @@
   // Botón reintentar clima
   document.getElementById("btnWeather").addEventListener("click", () => {
     showToast("Reintentando clima…", "🌤️");
-    refreshWeather(true);
+    refreshWeather();
   });
 </script>
 </body>
