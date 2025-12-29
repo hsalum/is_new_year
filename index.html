@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>¿Es Año Nuevo?</title>
   <meta name="theme-color" content="#060a1f" />
+
   <style>
     :root{
       --bg1:#05061a; --bg2:#0b0f2a;
@@ -14,14 +15,19 @@
       --muted: rgba(255,255,255,.68);
       --gold:#ffd166; --pink:#ff4d8d; --cyan:#37d6ff; --mint:#2ee6a6;
     }
+
     *{ box-sizing:border-box; }
     html, body { height: 100%; }
 
     body{
-      margin:0; min-height:100vh;
-      display:flex; align-items:center; justify-content:center;
-      padding:28px; color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial;
       background:
         radial-gradient(900px 500px at 15% 15%, rgba(55,214,255,.16), transparent 60%),
         radial-gradient(900px 500px at 85% 25%, rgba(255,77,141,.14), transparent 60%),
@@ -30,622 +36,290 @@
       overflow:hidden;
     }
 
-    canvas#fx{ position:fixed; inset:0; pointer-events:none; z-index:0; }
-    .stars{
-      position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.55;
-      background-image:
-        radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.55), transparent 60%),
-        radial-gradient(1px 1px at 84% 22%, rgba(255,255,255,.40), transparent 60%),
-        radial-gradient(1px 1px at 55% 62%, rgba(255,255,255,.35), transparent 60%),
-        radial-gradient(1px 1px at 32% 78%, rgba(255,255,255,.42), transparent 60%),
-        radial-gradient(1px 1px at 70% 86%, rgba(255,255,255,.28), transparent 60%);
-      filter: blur(.15px);
+    canvas#fx{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
     }
 
-    .wrap{ width:min(900px, 100%); text-align:center; position:relative; z-index:1; }
+    .wrap{
+      width:min(900px,100%);
+      position:relative;
+      z-index:1;
+      text-align:center;
+    }
+
     .card{
       position:relative;
-      padding:28px 22px 22px;
+      padding:28px 22px 24px;
       border-radius:22px;
       background:var(--card);
       border:1px solid var(--stroke);
       backdrop-filter: blur(10px);
-      box-shadow: 0 30px 90px rgba(0,0,0,.45);
-      overflow:hidden;
-    }
-    .glowTop{
-      position:absolute; inset:-90px -110px auto -110px; height:210px;
-      background: radial-gradient(closest-side, rgba(124,92,255,.18), transparent 70%);
-      filter: blur(10px); pointer-events:none;
+      box-shadow:0 30px 90px rgba(0,0,0,.45);
     }
 
     .badge{
-      display:inline-flex; align-items:center; gap:10px;
-      padding:8px 12px; border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
       border:1px solid var(--stroke);
-      background: rgba(0,0,0,.18);
-      color:var(--muted); font-size:13px;
-      margin-bottom:14px; user-select:none;
+      background:rgba(0,0,0,.18);
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:14px;
     }
+
     .dot{
-      width:9px; height:9px; border-radius:50%;
+      width:9px; height:9px;
+      border-radius:50%;
       background:var(--mint);
       box-shadow:0 0 0 6px rgba(46,230,166,.12);
-      animation:pulse 1.6s ease-in-out infinite;
-      flex: 0 0 auto;
+      animation:pulse 1.6s infinite;
     }
-    @keyframes pulse{ 0%,100%{ transform:scale(1); opacity:1 } 50%{ transform:scale(1.2); opacity:.8 } }
 
-    select{
-      appearance:none;
-      border:1px solid rgba(255,255,255,.18);
-      background:rgba(0,0,0,.2);
-      color:var(--text);
-      padding:6px 28px 6px 10px;
-      border-radius:999px;
-      font-size:13px; cursor:pointer; outline:none;
+    @keyframes pulse{
+      0%,100%{ transform:scale(1); opacity:1 }
+      50%{ transform:scale(1.2); opacity:.8 }
     }
-    .selectWrap{ position:relative; display:inline-flex; align-items:center; }
-    .chev{ position:absolute; right:10px; opacity:.7; pointer-events:none; font-size:12px; transform: translateY(1px); }
 
     h1{
       margin:10px 0 6px;
-      font-size:clamp(42px, 6vw, 76px);
-      letter-spacing:-0.02em;
-      line-height:1.05;
+      font-size:clamp(42px,6vw,76px);
+      letter-spacing:-.02em;
     }
-    .ansText{ display:inline-block; vertical-align:baseline; }
+
+    .ansText{
+      background:linear-gradient(90deg,#fff,rgba(255,255,255,.55));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
     .yes .ansText{
       background:linear-gradient(90deg,var(--gold),var(--pink),var(--cyan));
-      -webkit-background-clip:text; background-clip:text;
-      color:transparent;
-      text-shadow: 0 0 40px rgba(255,209,102,.06);
-    }
-    .no .ansText{
-      background:linear-gradient(90deg,#fff,rgba(255,255,255,.55));
-      -webkit-background-clip:text; background-clip:text;
+      -webkit-background-clip:text;
+      background-clip:text;
       color:transparent;
     }
+
     .ansEmoji{
-      display:inline-block;
-      margin-left:.28em;
-      color: rgba(255,255,255,.92);
-      text-shadow: 0 10px 28px rgba(0,0,0,.35);
-      transform: translateY(.04em);
+      margin-left:.25em;
+      color:#fff;
     }
 
-    .sub{ font-size:clamp(16px,2.2vw,20px); color:var(--muted); margin: 8px 0 0; }
-    .big{ margin-top:14px; font-size:clamp(18px,2.4vw,22px); color: rgba(255,255,255,.86); }
-
-    .emojiLeft, .emojiRight{
-      position:absolute; top:18px; font-size:18px; opacity:.8;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-      user-select:none;
+    .sub{
+      margin-top:8px;
+      font-size:18px;
+      color:var(--muted);
     }
-    .emojiLeft{ left:18px; }
-    .emojiRight{ right:18px; }
 
-    .btnRow{ margin-top: 16px; display:flex; gap:10px; justify-content:center; flex-wrap: wrap; }
+    .big{
+      margin-top:14px;
+      font-size:20px;
+    }
+
     .pushBtn{
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.22);
-      color: rgba(255,255,255,.92);
-      padding: 16px 20px;
-      border-radius: 999px;
-      cursor: pointer;
-      font-size: 15px;
-      letter-spacing: .2px;
-      user-select:none;
+      margin-top:18px;
+      padding:16px 22px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(0,0,0,.25);
+      color:#fff;
+      font-size:16px;
+      cursor:pointer;
       display:inline-flex;
-      align-items:center;
       gap:12px;
-      box-shadow:
-        0 22px 60px rgba(0,0,0,.42),
-        0 0 0 1px rgba(255,255,255,.05) inset;
-      transition: transform .08s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
-      min-width: 320px;
-      justify-content:center;
+      align-items:center;
+      box-shadow:0 20px 60px rgba(0,0,0,.45);
+      transition:.15s;
     }
-    .pushBtn:hover{
-      background: rgba(0,0,0,.30);
-      border-color: rgba(255,255,255,.28);
-      box-shadow:
-        0 28px 70px rgba(0,0,0,.52),
-        0 0 0 1px rgba(255,255,255,.06) inset;
-    }
-    .pushBtn:active{ transform: translateY(2px); }
-    .pushBtn:disabled{ opacity:.60; cursor:not-allowed; transform:none; }
+
+    .pushBtn:hover{ background:rgba(0,0,0,.35); }
+    .pushBtn:active{ transform:translateY(2px); }
 
     .weather{
-      margin-top: 18px;
+      margin-top:22px;
+      padding-top:14px;
+      border-top:1px solid rgba(255,255,255,.12);
       text-align:left;
-      border-top: 1px solid rgba(255,255,255,.12);
-      padding-top: 14px;
     }
+
     .weatherTitle{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      color: rgba(255,255,255,.86);
-      font-size: 13px;
-      letter-spacing: .2px;
-      margin-bottom: 10px;
-      user-select:none;
+      display:flex;
+      justify-content:space-between;
+      font-size:13px;
+      color:rgba(255,255,255,.85);
+      margin-bottom:10px;
     }
-    .weatherGrid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+
+    .weatherGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
     .wxCard{
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.14);
-      border-radius: 16px;
-      padding: 12px;
+      padding:12px;
+      border-radius:14px;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
     }
-    .wxTop{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px; color: rgba(255,255,255,.86); font-size: 13px; }
-    .wxLine{ color: rgba(255,255,255,.70); font-size: 13px; line-height: 1.35; }
-    .wxFooter{ margin-top: 10px; color: rgba(255,255,255,.50); font-size: 12px; line-height: 1.35; }
-    @media (max-width:520px){
-      .weatherGrid{ grid-template-columns: 1fr; }
-      .pushBtn{ min-width: 100%; }
+
+    .wxTop{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:6px;
+    }
+
+    .wxLine{
+      color:rgba(255,255,255,.75);
+      font-size:14px;
+    }
+
+    .wxFooter{
+      margin-top:10px;
+      font-size:12px;
+      color:rgba(255,255,255,.5);
+    }
+
+    @media(max-width:520px){
+      .weatherGrid{ grid-template-columns:1fr; }
     }
   </style>
 </head>
 
 <body>
-  <div class="stars"></div>
-  <canvas id="fx"></canvas>
 
-  <div class="wrap">
-    <div class="card">
-      <div class="glowTop"></div>
-      <div class="emojiLeft" id="leftEmoji">✨</div>
-      <div class="emojiRight" id="rightEmoji">🌙</div>
+<canvas id="fx"></canvas>
 
-      <div class="badge">
-        <span class="dot"></span>
-        <span>Horario</span>
-        <span class="selectWrap">
-          <select id="tzSelect" aria-label="Seleccionar zona horaria"></select>
-          <span class="chev">▾</span>
-        </span>
-      </div>
+<div class="wrap">
+  <div class="card">
 
-      <h1 id="answer" class="no">
-        <span class="ansText" id="answerText">…</span>
-        <span class="ansEmoji" id="answerEmoji">…</span>
-      </h1>
-
-      <p class="sub" id="subtitle">…</p>
-      <p class="big" id="countdown">…</p>
-
-      <div class="btnRow">
-        <button class="pushBtn" id="btnFire" type="button">
-          <span>🎆</span>
-          <span id="btnFireLabel">Lanzar fuegos artificiales</span>
-        </button>
-      </div>
-
-      <section class="weather">
-        <div class="weatherTitle">
-          <span>🌤️ Clima (mín / máx)</span>
-          <span style="color:rgba(255,255,255,.55); font-size:12px;" id="wxLoc"></span>
-        </div>
-
-        <div class="weatherGrid">
-          <div class="wxCard">
-            <div class="wxTop"><div>31/12/2025</div><div id="wxEmoji31">…</div></div>
-            <div class="wxLine" id="wxLine31">Cargando…</div>
-          </div>
-
-          <div class="wxCard">
-            <div class="wxTop"><div>01/01/2026</div><div id="wxEmoji01">…</div></div>
-            <div class="wxLine" id="wxLine01">Cargando…</div>
-          </div>
-        </div>
-
-        <div class="wxFooter" id="wxFooter"></div>
-      </section>
+    <div class="badge">
+      <span class="dot"></span>
+      Horario: Argentina (Buenos Aires)
     </div>
+
+    <h1 id="answer" class="no">
+      <span class="ansText" id="answerText">No</span>
+      <span class="ansEmoji" id="answerEmoji">😢</span>
+    </h1>
+
+    <div class="sub" id="subtitle">Todavía no es Año Nuevo.</div>
+    <div class="big" id="countdown">…</div>
+
+    <button class="pushBtn" id="btnFire">
+      🎆 Lanzar fuegos artificiales
+    </button>
+
+    <section class="weather">
+      <div class="weatherTitle">
+        <span>🌤️ Clima (mín / máx)</span>
+        <span>📍 Buenos Aires (CABA)</span>
+      </div>
+
+      <div class="weatherGrid">
+        <div class="wxCard">
+          <div class="wxTop"><span>31/12/2025</span><span>🔥</span></div>
+          <div class="wxLine">mín 20° · máx 39°</div>
+        </div>
+
+        <div class="wxCard">
+          <div class="wxTop"><span>01/01/2026</span><span>🌤️</span></div>
+          <div class="wxLine">mín 17° · máx 28°</div>
+        </div>
+      </div>
+
+      <div class="wxFooter">
+        Pronóstico estimado para CABA · Fin de diciembre históricamente muy caluroso.
+      </div>
+    </section>
+
   </div>
+</div>
 
 <script>
-  const TARGET_31 = "2025-12-31";
-  const TARGET_01 = "2026-01-01";
-
-  const TZ_OPTIONS = [
-    { id:"America/Argentina/Buenos_Aires", label:"Argentina (Buenos Aires)" },
-    { id:"America/Mexico_City", label:"México (CDMX)" },
-    { id:"America/Santiago", label:"Chile (Santiago)" },
-    { id:"America/Lima", label:"Perú (Lima)" },
-    { id:"America/Bogota", label:"Colombia (Bogotá)" },
-    { id:"America/New_York", label:"USA (New York)" },
-    { id:"America/Los_Angeles", label:"USA (Los Ángeles)" },
-    { id:"Europe/Madrid", label:"España (Madrid)" }
-  ];
-
-  const TZ_GEO = {
-    "America/Argentina/Buenos_Aires": { name:"Buenos Aires", lat:-34.6037, lon:-58.3816 },
-    "America/Mexico_City": { name:"CDMX", lat:19.4326, lon:-99.1332 },
-    "America/Santiago": { name:"Santiago", lat:-33.4489, lon:-70.6693 },
-    "America/Lima": { name:"Lima", lat:-12.0464, lon:-77.0428 },
-    "America/Bogota": { name:"Bogotá", lat:4.7110, lon:-74.0721 },
-    "America/New_York": { name:"New York", lat:40.7128, lon:-74.0060 },
-    "America/Los_Angeles": { name:"Los Ángeles", lat:34.0522, lon:-118.2437 },
-    "Europe/Madrid": { name:"Madrid", lat:40.4168, lon: -3.7038 }
-  };
-
-  const STORAGE_KEY = "esanionuevo_tz";
-  let TZ = localStorage.getItem(STORAGE_KEY) || "America/Argentina/Buenos_Aires";
-
-  function nowInTZAsUTCDate(tz){
-    const parts = new Intl.DateTimeFormat("en-US",{
-      timeZone:tz,
-      year:"numeric",month:"2-digit",day:"2-digit",
-      hour:"2-digit",minute:"2-digit",second:"2-digit",
-      hour12:false
-    }).formatToParts(new Date());
-    const get = t => Number(parts.find(p=>p.type===t).value);
-    return new Date(Date.UTC(get("year"), get("month")-1, get("day"), get("hour"), get("minute"), get("second")));
+  function isNewYear(){
+    const d = new Date();
+    return d.getMonth() === 0 && d.getDate() === 1;
   }
 
-  function isNewYear(d){ return d.getUTCMonth()===0 && d.getUTCDate()===1; }
-
-  function nextNewYear(d){
-    const y = d.getUTCFullYear();
-    const m = d.getUTCMonth()+1;
-    const day = d.getUTCDate();
-    const next = (m>1 || (m===1 && day>1)) ? y+1 : y;
-    return new Date(Date.UTC(next,0,1,0,0,0));
-  }
-
-  function pad(n){ return String(n).padStart(2,"0"); }
-
-  function setAnswer({ mode, text, emoji }){
-    const h1 = document.getElementById("answer");
-    document.getElementById("answerText").textContent = text;
-    document.getElementById("answerEmoji").textContent = emoji;
-    h1.className = mode;
+  function nextNewYear(){
+    const now = new Date();
+    const y = now.getMonth() === 0 && now.getDate() === 1
+      ? now.getFullYear()
+      : now.getFullYear() + 1;
+    return new Date(y,0,1,0,0,0);
   }
 
   function update(){
-    const now = nowInTZAsUTCDate(TZ);
-    const st = document.getElementById("subtitle");
-    const c = document.getElementById("countdown");
-    const leftEmoji = document.getElementById("leftEmoji");
-    const rightEmoji = document.getElementById("rightEmoji");
+    const aText = document.getElementById("answerText");
+    const aEmoji = document.getElementById("answerEmoji");
+    const sub = document.getElementById("subtitle");
+    const cd = document.getElementById("countdown");
+    const h1 = document.getElementById("answer");
 
-    if(isNewYear(now)){
-      setAnswer({ mode:"yes", text:"Sí", emoji:"🎉" });
-      st.textContent = "¡Hoy es Año Nuevo! 🥂";
-      c.textContent = "Salud, abrazos y nuevos comienzos ✨";
-      leftEmoji.textContent = "🎆";
-      rightEmoji.textContent = "🥂";
+    if(isNewYear()){
+      h1.className="yes";
+      aText.textContent="Sí";
+      aEmoji.textContent="🎉";
+      sub.textContent="¡Hoy es Año Nuevo! 🥂";
+      cd.textContent="Salud, abrazos y nuevos comienzos ✨";
       return;
     }
 
-    const diff = nextNewYear(now) - now;
-    const sec = Math.max(0, Math.ceil(diff/1000));
-    const h = Math.floor(sec/3600);
-    const m = Math.floor((sec%3600)/60);
-    const s = sec%60;
-    c.textContent = `Faltan ${h}h ${pad(m)}m ${pad(s)}s para Año Nuevo.`;
+    const diff = nextNewYear() - new Date();
+    const s = Math.floor(diff/1000);
+    const h = Math.floor(s/3600);
+    const m = Math.floor((s%3600)/60);
+    const sec = s%60;
 
-    const hoursLeft = sec / 3600;
+    cd.textContent = `Faltan ${h}h ${m}m ${sec}s para Año Nuevo.`;
 
-    if(hoursLeft <= 24){
-      setAnswer({ mode:"yes", text:"No", emoji:"🤩" });
-      st.textContent = "No, pero… estamos a nada 🎇";
-      leftEmoji.textContent = "✨";
-      rightEmoji.textContent = "⏳";
-    } else if(hoursLeft <= 24*7){
-      setAnswer({ mode:"yes", text:"No", emoji:"😄" });
-      st.textContent = "No, pero… falta poco 🎶";
-      leftEmoji.textContent = "✨";
-      rightEmoji.textContent = "🗓️";
+    if(h < 24){
+      h1.className="yes";
+      aText.textContent="No";
+      aEmoji.textContent="🤩";
+      sub.textContent="No, pero estamos a nada 🎇";
     } else {
-      setAnswer({ mode:"no", text:"No", emoji:"😢" });
-      st.textContent = "Todavía no es Año Nuevo.";
-      leftEmoji.textContent = "✨";
-      rightEmoji.textContent = "🌙";
+      h1.className="no";
+      aText.textContent="No";
+      aEmoji.textContent="😢";
+      sub.textContent="Todavía no es Año Nuevo.";
     }
   }
 
-  function setWx(dayKey, emoji, min, max, label){
-    document.getElementById(`wxEmoji${dayKey}`).textContent = emoji;
-    document.getElementById(`wxLine${dayKey}`).textContent =
-      `${label}: mín ${Math.round(min)}° · máx ${Math.round(max)}°`;
-  }
-
-  function codeToEmoji(c){
-    c = Number(c);
-    if(c === 0) return "☀️";
-    if(c === 1 || c === 2) return "🌤️";
-    if(c === 3) return "☁️";
-    if(c === 45 || c === 48) return "🌫️";
-    if((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return "🌧️";
-    if(c >= 71 && c <= 77) return "🌨️";
-    if(c >= 95) return "⛈️";
-    return "🌙";
-  }
-
-  async function loadWeatherFixedDates(){
-    const geo = TZ_GEO[TZ] || TZ_GEO["America/Argentina/Buenos_Aires"];
-    document.getElementById("wxLoc").textContent = `📍 ${geo.name}`;
-    document.getElementById("wxFooter").textContent = "";
-
-    // placeholders
-    document.getElementById("wxEmoji31").textContent = "…";
-    document.getElementById("wxEmoji01").textContent = "…";
-    document.getElementById("wxLine31").textContent = "Cargando…";
-    document.getElementById("wxLine01").textContent = "Cargando…";
-
-    // IMPORTANTE: timezone = TZ (no "auto") para que las fechas coincidan
-    const url = new URL("https://api.open-meteo.com/v1/forecast");
-    url.searchParams.set("latitude", String(geo.lat));
-    url.searchParams.set("longitude", String(geo.lon));
-    url.searchParams.set("timezone", TZ);
-    url.searchParams.set("forecast_days", "16");
-    url.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,weather_code");
-
-    const ctrl = new AbortController();
-    const timeout = setTimeout(()=>ctrl.abort(), 6500);
-
-    try{
-      const res = await fetch(url.toString(), { cache:"no-store", signal: ctrl.signal });
-      clearTimeout(timeout);
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-
-      const daily = data?.daily || {};
-      const times = daily.time || [];
-
-      const i31 = times.indexOf(TARGET_31);
-      const i01 = times.indexOf(TARGET_01);
-
-      if(i31 === -1 || i01 === -1){
-        document.getElementById("wxLine31").textContent = "No disponible (fuera de la ventana del pronóstico).";
-        document.getElementById("wxLine01").textContent = "No disponible (fuera de la ventana del pronóstico).";
-        document.getElementById("wxFooter").textContent =
-          "El proveedor suele dar ~16 días. Si estás muy lejos de la fecha, no va a aparecer.";
-        return;
-      }
-
-      setWx("31",
-        codeToEmoji(daily.weather_code[i31]),
-        daily.temperature_2m_min[i31],
-        daily.temperature_2m_max[i31],
-        "31/12/2025"
-      );
-
-      setWx("01",
-        codeToEmoji(daily.weather_code[i01]),
-        daily.temperature_2m_min[i01],
-        daily.temperature_2m_max[i01],
-        "01/01/2026"
-      );
-
-      document.getElementById("wxFooter").textContent = "Fuente: Open-Meteo · Fechas en tu zona horaria seleccionada.";
-    }catch(e){
-      clearTimeout(timeout);
-      document.getElementById("wxLine31").textContent = "No pude traer el pronóstico.";
-      document.getElementById("wxLine01").textContent = "No pude traer el pronóstico.";
-      document.getElementById("wxFooter").textContent =
-        "Si recargás y sigue igual, tu red podría estar bloqueando el dominio.";
-    }
-  }
-
-  function setupTZSelect(){
-    const sel = document.getElementById("tzSelect");
-    sel.innerHTML = "";
-    for (const o of TZ_OPTIONS){
-      const opt = document.createElement("option");
-      opt.value = o.id;
-      opt.textContent = o.label;
-      if(o.id === TZ) opt.selected = true;
-      sel.appendChild(opt);
-    }
-    sel.addEventListener("change", () => {
-      TZ = sel.value;
-      localStorage.setItem(STORAGE_KEY, TZ);
-      update();
-      loadWeatherFixedDates();
-      FX.setModeFromDate();
-    });
-  }
-
-  // FX: luces + fuegos (igual que antes)
-  const FX = (() => {
-    const canvas = document.getElementById("fx");
-    const ctx = canvas.getContext("2d", { alpha: true });
-
-    let w=0, h=0, dpr=1;
-    let mode = "calm";
-    const rockets = [];
-    const parts = [];
-    const orbs = [];
-    const isMobile = () => Math.min(window.innerWidth, window.innerHeight) < 520;
-
-    function cfg(){
-      const party = (mode === "party");
-      return {
-        fadeAlpha: party ? (isMobile()? 0.14 : 0.12) : 0.08,
-        gravity: party ? 0.055 : 0.03,
-        maxRockets: party ? (isMobile()? 10 : 16) : 0,
-        launchChance: party ? (isMobile()? 0.22 : 0.30) : 0,
-        burstMin: party ? (isMobile()? 48 : 70) : 0,
-        burstMax: party ? (isMobile()? 88 : 120) : 0,
-        manualBurstMin: isMobile()? 70 : 105,
-        manualBurstMax: isMobile()? 130 : 190,
-        pMin: 1.0, pMax: isMobile()? 2.1 : 2.4,
-        orbCount: isMobile()? 18 : 28,
-      };
-    }
-    let CFG = cfg();
-
-    function resize(){
-      dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      w = window.innerWidth; h = window.innerHeight;
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      canvas.style.width = w + "px";
-      canvas.style.height = h + "px";
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      CFG = cfg();
-      initOrbs();
-    }
-    function rand(min,max){ return Math.random()*(max-min)+min; }
-
-    function initOrbs(){
-      orbs.length = 0;
-      for(let i=0;i<CFG.orbCount;i++){
-        orbs.push({
-          x: rand(0,w), y: rand(0,h),
-          r: rand(18, 52),
-          vx: rand(-0.12, 0.12), vy: rand(-0.08, 0.08),
-          hue: rand(185, 335),
-          a: rand(0.06, 0.14)
-        });
-      }
-    }
-
-    function setModeFromDate(){
-      const nowTZ = nowInTZAsUTCDate(TZ);
-      const mm = nowTZ.getUTCMonth()+1;
-      const dd = nowTZ.getUTCDate();
-      const shouldParty = (mm === 12 && dd === 31) || (mm === 1 && dd === 1);
-      mode = shouldParty ? "party" : "calm";
-      CFG = cfg();
-      rockets.length = 0;
-    }
-
-    function launch(){
-      const x = rand(w*0.10, w*0.90);
-      rockets.push({
-        x, y: h + rand(10, 80),
-        vx: rand(-0.9, 0.9),
-        vy: rand(-13.6, -10.8),
-        targetY: rand(h*0.14, h*0.55),
-        life: rand(30, 70),
-        hue: rand(190, 340),
-      });
-    }
-
-    function burstAt(x,y,hueBase, minCount, maxCount){
-      const count = Math.floor(rand(minCount, maxCount));
-      for(let i=0;i<count;i++){
-        const a = rand(0, Math.PI*2);
-        const sp = rand(1.6, 6.0);
-        const hue = hueBase + rand(-28, 28);
-        const alpha = rand(0.55, 0.95);
-        const r = rand(CFG.pMin, CFG.pMax);
-        const ttl = rand(55, 135);
-        parts.push({ x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, hue, alpha, r, ttl, age:0 });
-      }
-    }
-
-    function drawGlowCircle(x,y,r, hue, alpha){
-      ctx.globalAlpha = alpha * 0.22;
-      ctx.fillStyle = `hsla(${hue} 100% 75% / 1)`;
-      ctx.beginPath(); ctx.arc(x,y,r*3.2,0,Math.PI*2); ctx.fill();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = `hsla(${hue} 100% 70% / 1)`;
-      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
-    }
-
-    function step(){
-      ctx.fillStyle = `rgba(0,0,0,${CFG.fadeAlpha})`;
-      ctx.fillRect(0,0,w,h);
-
-      for(const o of orbs){
-        o.x += o.vx; o.y += o.vy;
-        if(o.x < -80) o.x = w+80;
-        if(o.x > w+80) o.x = -80;
-        if(o.y < -80) o.y = h+80;
-        if(o.y > h+80) o.y = -80;
-
-        ctx.globalAlpha = o.a;
-        ctx.fillStyle = `hsla(${o.hue} 100% 70% / 1)`;
-        ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
-      for(let i=parts.length-1;i>=0;i--){
-        const p = parts[i];
-        p.age++;
-        p.x += p.vx; p.y += p.vy;
-        p.vy += (mode === "party") ? CFG.gravity : 0.04;
-        p.vx *= 0.985; p.vy *= 0.985;
-
-        const t = p.age / p.ttl;
-        const a = p.alpha * (1 - t);
-        drawGlowCircle(p.x, p.y, p.r, p.hue, a);
-
-        if(p.age >= p.ttl) parts.splice(i,1);
-      }
-
-      if(mode === "party"){
-        for(let i=rockets.length-1;i>=0;i--){
-          const r = rockets[i];
-          r.x += r.vx; r.y += r.vy;
-          r.vy += CFG.gravity*0.22;
-          r.life--;
-
-          ctx.globalAlpha = 0.85;
-          ctx.fillStyle = "rgba(255,255,255,0.9)";
-          ctx.beginPath(); ctx.arc(r.x, r.y, 1.35, 0, Math.PI*2); ctx.fill();
-
-          if(r.y <= r.targetY || r.life <= 0){
-            burstAt(r.x, r.y, r.hue, CFG.burstMin, CFG.burstMax);
-            rockets.splice(i,1);
-          }
-        }
-
-        if(rockets.length < CFG.maxRockets && Math.random() < CFG.launchChance){
-          launch();
-          if(!isMobile() && Math.random() < 0.35) launch();
-        }
-
-        if(parts.length < (isMobile()? 950 : 1900) && Math.random() < 0.02){
-          burstAt(rand(w*0.15,w*0.85), rand(h*0.18,h*0.50), rand(190,340), CFG.burstMin, CFG.burstMax);
-        }
-      }
-
-      ctx.globalAlpha = 1;
-      requestAnimationFrame(step);
-    }
-
-    function manualShow(){
-      const bursts = isMobile() ? 3 : 5;
-      for(let i=0;i<bursts;i++){
-        setTimeout(() => {
-          burstAt(rand(w*0.18, w*0.82), rand(h*0.18, h*0.52), rand(190, 340), CFG.manualBurstMin, CFG.manualBurstMax);
-        }, i * (isMobile() ? 190 : 150));
-      }
-    }
-
-    resize();
-    setModeFromDate();
-    window.addEventListener("resize", resize);
-    requestAnimationFrame(step);
-    setInterval(setModeFromDate, 60_000);
-
-    return { setModeFromDate, manualShow };
-  })();
-
-  // Init
-  setupTZSelect();
+  setInterval(update,1000);
   update();
-  setInterval(update, 250);
-  loadWeatherFixedDates();
 
-  // Botón fuegos
-  const btnFire = document.getElementById("btnFire");
-  const btnFireLabel = document.getElementById("btnFireLabel");
-  btnFire.addEventListener("click", () => {
-    btnFire.disabled = true;
-    btnFireLabel.textContent = "Recargando…";
-    FX.manualShow();
-    setTimeout(() => {
-      btnFire.disabled = false;
-      btnFireLabel.textContent = "Lanzar fuegos artificiales";
-    }, 1300);
-  });
+  // Fuegos artificiales simples
+  const canvas = document.getElementById("fx");
+  const ctx = canvas.getContext("2d");
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.onresize = resize;
+
+  function fire(){
+    for(let i=0;i<120;i++){
+      const x = Math.random()*canvas.width;
+      const y = Math.random()*canvas.height/2;
+      ctx.fillStyle = `hsl(${Math.random()*360} 100% 70%)`;
+      ctx.beginPath();
+      ctx.arc(x,y,2,0,Math.PI*2);
+      ctx.fill();
+    }
+    setTimeout(()=>ctx.clearRect(0,0,canvas.width,canvas.height),800);
+  }
+
+  document.getElementById("btnFire").onclick = fire;
 </script>
+
 </body>
 </html>
