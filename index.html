@@ -632,7 +632,7 @@
     document.getElementById("wxFooter").textContent = "";
 
     // si tu red bloquea, evitamos “cargando infinito”: timeout corto y fallback
-    const url = new URL("https://api.open-meteo.com/v1/forecast");
+    const url = new URL("https://newyear.btriay.workers.dev/");
     url.searchParams.set("latitude", String(geo.lat));
     url.searchParams.set("longitude", String(geo.lon));
     url.searchParams.set("timezone", "auto");
